@@ -8,6 +8,8 @@ local GuiService = game:GetService("GuiService")
 local player = Players.LocalPlayer
 
 local tabs = {}
+local isMaximized = false
+local prevSize, prevPosition
 
 function UI.CreateMainGui()
     local gui = Instance.new("ScreenGui")
@@ -31,7 +33,7 @@ function UI.CreateMainGui()
     Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 8)
 
     local titleLabel = Instance.new("TextLabel", titleBar)
-    titleLabel.Size = UDim2.new(1, -180, 1, 0)
+    titleLabel.Size = UDim2.new(1, -220, 1, 0)
     titleLabel.Position = UDim2.new(0, 15, 0, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = "🛠️ Pilgrammed Utility"
@@ -53,17 +55,38 @@ function UI.CreateMainGui()
         btn.BorderSizePixel = 0
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
         btn.MouseButton1Click:Connect(callback)
+        return btn
     end
 
-    createTitleBtn("🔽", -82, function() mainFrame.Visible = false end)
-    createTitleBtn("❌", -42, function() gui:Destroy() end)
+    createTitleBtn("🔽", -122, function() 
+        mainFrame.Visible = false 
+    end)
 
-    -- ==================== RESIZE CUBE ====================
+    local maximizeBtn = createTitleBtn("⛶", -82, function()
+        if not isMaximized then
+            prevSize = mainFrame.Size
+            prevPosition = mainFrame.Position
+            mainFrame.Size = UDim2.new(1, -40, 1, -40)
+            mainFrame.Position = UDim2.new(0, 20, 0, 20)
+            isMaximized = true
+            maximizeBtn.Text = "⬜"
+        else
+            mainFrame.Size = prevSize
+            mainFrame.Position = prevPosition
+            isMaximized = false
+            maximizeBtn.Text = "⛶"
+        end
+    end)
+
+    createTitleBtn("❌", -42, function() 
+        gui:Destroy() 
+    end)
+
+    -- Resize Cube (оставляем как было)
     local resizeHandle = Instance.new("Frame", mainFrame)
-    resizeHandle.Name = "ResizeHandle"
     resizeHandle.Size = UDim2.new(0, 28, 0, 28)
     resizeHandle.Position = UDim2.new(1, -28, 1, -28)
-    resizeHandle.BackgroundColor3 = Color3.fromRGB(75, 75, 75)  -- Чуть светлее основного
+    resizeHandle.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
     resizeHandle.BorderSizePixel = 0
     resizeHandle.ZIndex = 999
     Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 6)
@@ -94,14 +117,13 @@ function UI.CreateMainGui()
         end
     end)
 
-    -- Tab Panel + Content (без изменений)
+    -- Tab Panel и Content (без изменений)
     local tabPanel = Instance.new("ScrollingFrame", mainFrame)
     tabPanel.Position = UDim2.new(0, 10, 0, 63)
     tabPanel.Size = UDim2.new(0, 140, 1, -80)
     tabPanel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     tabPanel.BorderSizePixel = 0
     Instance.new("UICorner", tabPanel).CornerRadius = UDim.new(0, 8)
-
     Instance.new("UIListLayout", tabPanel).Padding = UDim.new(0, 6)
 
     local contentZone = Instance.new("ScrollingFrame", mainFrame)
@@ -110,7 +132,6 @@ function UI.CreateMainGui()
     contentZone.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     contentZone.BorderSizePixel = 0
     Instance.new("UICorner", contentZone).CornerRadius = UDim.new(0, 8)
-
     Instance.new("UIListLayout", contentZone).Padding = UDim.new(0, 12)
 
     -- Drag
@@ -142,7 +163,7 @@ function UI.CreateMainGui()
     UI.Tabs = tabs
     UI.Gui = gui
 
-    print("✅ UI с кубиком для ресайза загружен!")
+    print("✅ UI с кнопкой максимизации загружен!")
     return UI
 end
 
