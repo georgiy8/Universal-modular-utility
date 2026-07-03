@@ -3,6 +3,7 @@ local UI = {}
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
@@ -61,16 +62,21 @@ function UI.CreateMainGui()
     createTitleBtn("❌", -42, function() gui:Destroy() end)
 
     -- ==================== RESIZE HANDLE ====================
-    local resizeHandle = Instance.new("TextButton", mainFrame)
-    resizeHandle.Size = UDim2.new(0, 25, 0, 25)
-    resizeHandle.Position = UDim2.new(1, -25, 1, -25)
-    resizeHandle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    resizeHandle.Text = "↘"
-    resizeHandle.TextSize = 18
-    resizeHandle.Font = Enum.Font.GothamBold
-    resizeHandle.TextColor3 = Color3.fromRGB(200, 200, 200)
-    resizeHandle.BorderSizePixel = 0
+    local resizeHandle = Instance.new("Frame", mainFrame)
+    resizeHandle.Size = UDim2.new(0, 30, 0, 30)
+    resizeHandle.Position = UDim2.new(1, -30, 1, -30)
+    resizeHandle.BackgroundTransparency = 0.3
+    resizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    resizeHandle.ZIndex = 100
     Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 6)
+
+    local resizeLabel = Instance.new("TextLabel", resizeHandle)
+    resizeLabel.Size = UDim2.new(1, 0, 1, 0)
+    resizeLabel.BackgroundTransparency = 1
+    resizeLabel.Text = "↘"
+    resizeLabel.TextSize = 24
+    resizeLabel.Font = Enum.Font.GothamBold
+    resizeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 
     local resizing = false
 
@@ -88,17 +94,17 @@ function UI.CreateMainGui()
 
     UserInputService.InputChanged:Connect(function(input)
         if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mouse = UserInputService:GetMouseLocation()
-            local inset = GuiService:GetGuiInset()
+            local mousePos = UserInputService:GetMouseLocation()
+            local guiInset = GuiService:GetGuiInset()
             
-            local newWidth = math.clamp(mouse.X - mainFrame.AbsolutePosition.X + 10, 500, 900)
-            local newHeight = math.clamp(mouse.Y - mainFrame.AbsolutePosition.Y - inset.Y + 10, 400, 700)
+            local newW = math.clamp(mousePos.X - mainFrame.AbsolutePosition.X + 15, 520, 950)
+            local newH = math.clamp(mousePos.Y - mainFrame.AbsolutePosition.Y - guiInset.Y + 15, 420, 750)
             
-            mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+            mainFrame.Size = UDim2.new(0, newW, 0, newH)
         end
     end)
 
-    -- Tab Panel и Content (тот же код что раньше)
+    -- Tab Panel
     local tabPanel = Instance.new("ScrollingFrame", mainFrame)
     tabPanel.Name = "TabPanel"
     tabPanel.Position = UDim2.new(0, 10, 0, titleHeight + 18)
@@ -110,6 +116,7 @@ function UI.CreateMainGui()
 
     Instance.new("UIListLayout", tabPanel).Padding = UDim.new(0, 6)
 
+    -- Content
     local contentZone = Instance.new("ScrollingFrame", mainFrame)
     contentZone.Name = "ContentZone"
     contentZone.Position = UDim2.new(0, 160, 0, titleHeight + 18)
@@ -121,7 +128,7 @@ function UI.CreateMainGui()
 
     Instance.new("UIListLayout", contentZone).Padding = UDim.new(0, 12)
 
-    -- Drag (тот же)
+    -- Drag Title Bar
     local dragging = false
     local dragStart, startPos
 
@@ -150,11 +157,10 @@ function UI.CreateMainGui()
     UI.Tabs = tabs
     UI.Gui = gui
 
-    print("✅ UI с ресайзом загружен!")
+    print("✅ UI + Ресайз загружен!")
     return UI
 end
 
--- CreateTab функция (оставляем как в предыдущей версии)
 function UI.CreateTab(name, icon, order)
     local tab = {Name = name, Container = nil, Button = nil}
 
