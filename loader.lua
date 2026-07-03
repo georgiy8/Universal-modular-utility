@@ -45,8 +45,3 @@ for _, moduleName in ipairs(modules) do
 end
 
 print("🎉 Loader finished!")
-
-local guiSystem = UI.CreateMainGui()
-print("✅ GUI создан успешно")
-
-
