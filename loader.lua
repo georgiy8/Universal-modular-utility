@@ -6,7 +6,7 @@ print("🔄 Pilgrammed Utility Modular Loader v1")
 
 -- Загрузка конфига
 local successConfig, Config = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/ВАШ_НИК/ВАШ_РЕПО/main/config.lua", true))()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/georgiy8/Pilgrammed-modular-utility/refs/heads/main/Config.lua", true))()
 end)
 
 if not successConfig then
