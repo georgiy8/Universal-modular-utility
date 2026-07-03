@@ -24,7 +24,7 @@ function UI.CreateMainGui()
     mainFrame.BorderSizePixel = 0
     Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
 
-    -- Title Bar
+    -- ==================== TITLE BAR ====================
     local titleBar = Instance.new("Frame", mainFrame)
     titleBar.Size = UDim2.new(1, -20, 0, 45)
     titleBar.Position = UDim2.new(0, 10, 0, 10)
@@ -33,7 +33,7 @@ function UI.CreateMainGui()
     Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 8)
 
     local titleLabel = Instance.new("TextLabel", titleBar)
-    titleLabel.Size = UDim2.new(1, -230, 1, 0)
+    titleLabel.Size = UDim2.new(0.6, 0, 1, 0)
     titleLabel.Position = UDim2.new(0, 15, 0, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = "🛠️ Pilgrammed Utility"
@@ -42,44 +42,62 @@ function UI.CreateMainGui()
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Title Buttons
-    local function createTitleBtn(text, xOffset, callback)
-        local btn = Instance.new("TextButton", titleBar)
-        btn.Size = UDim2.new(0, 36, 0, 36)
-        btn.Position = UDim2.new(1, xOffset, 0, 4)
-        btn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-        btn.Text = text
-        btn.TextSize = 22
-        btn.Font = Enum.Font.GothamBold
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.BorderSizePixel = 0
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-        btn.MouseButton1Click:Connect(callback)
-        return btn
-    end
+    -- Кнопки (простое позиционирование)
+    local btnSize = UDim2.new(0, 38, 0, 38)
+    
+    local minimizeBtn = Instance.new("TextButton", titleBar)
+    minimizeBtn.Size = btnSize
+    minimizeBtn.Position = UDim2.new(1, -125, 0, 3)
+    minimizeBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    minimizeBtn.Text = "🔽"
+    minimizeBtn.TextSize = 24
+    minimizeBtn.Font = Enum.Font.GothamBold
+    minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0, 8)
+    minimizeBtn.MouseButton1Click:Connect(function() mainFrame.Visible = false end)
 
-    createTitleBtn("🔽", -122, function() mainFrame.Visible = false end)
-    createTitleBtn("⛶", -82, function() 
+    local maximizeBtn = Instance.new("TextButton", titleBar)
+    maximizeBtn.Size = btnSize
+    maximizeBtn.Position = UDim2.new(1, -85, 0, 3)
+    maximizeBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    maximizeBtn.Text = "⛶"
+    maximizeBtn.TextSize = 22
+    maximizeBtn.Font = Enum.Font.GothamBold
+    maximizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", maximizeBtn).CornerRadius = UDim.new(0, 8)
+    
+    maximizeBtn.MouseButton1Click:Connect(function()
         if not isMaximized then
             prevSize = mainFrame.Size
             prevPosition = mainFrame.Position
             mainFrame.Size = UDim2.new(1, -40, 1, -40)
             mainFrame.Position = UDim2.new(0, 20, 0, 20)
             isMaximized = true
+            maximizeBtn.Text = "⬜"
         else
             mainFrame.Size = prevSize
             mainFrame.Position = prevPosition
             isMaximized = false
+            maximizeBtn.Text = "⛶"
         end
     end)
-    createTitleBtn("❌", -42, function() gui:Destroy() end)
 
-    -- Resize Cube
+    local closeBtn = Instance.new("TextButton", titleBar)
+    closeBtn.Size = btnSize
+    closeBtn.Position = UDim2.new(1, -45, 0, 3)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    closeBtn.Text = "❌"
+    closeBtn.TextSize = 22
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
+    closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+    -- Resize
     local resizeHandle = Instance.new("Frame", mainFrame)
     resizeHandle.Size = UDim2.new(0, 28, 0, 28)
     resizeHandle.Position = UDim2.new(1, -28, 1, -28)
     resizeHandle.BackgroundColor3 = Color3.fromRGB(75, 75, 75)
-    resizeHandle.BorderSizePixel = 0
     resizeHandle.ZIndex = 999
     Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 6)
 
@@ -97,13 +115,13 @@ function UI.CreateMainGui()
         if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
             local mouse = UserInputService:GetMouseLocation()
             local inset = GuiService:GetGuiInset()
-            local newW = math.clamp(mouse.X - mainFrame.AbsolutePosition.X + 10, 520, 1000)
-            local newH = math.clamp(mouse.Y - mainFrame.AbsolutePosition.Y - inset.Y + 10, 420, 800)
+            local newW = math.clamp(mouse.X - mainFrame.AbsolutePosition.X + 15, 520, 1000)
+            local newH = math.clamp(mouse.Y - mainFrame.AbsolutePosition.Y - inset.Y + 15, 420, 800)
             mainFrame.Size = UDim2.new(0, newW, 0, newH)
         end
     end)
 
-    -- Tab Panel
+    -- Tab + Content
     local tabPanel = Instance.new("ScrollingFrame", mainFrame)
     tabPanel.Position = UDim2.new(0, 10, 0, 63)
     tabPanel.Size = UDim2.new(0, 140, 1, -80)
@@ -112,7 +130,6 @@ function UI.CreateMainGui()
     Instance.new("UICorner", tabPanel).CornerRadius = UDim.new(0, 8)
     Instance.new("UIListLayout", tabPanel).Padding = UDim.new(0, 6)
 
-    -- Content
     local contentZone = Instance.new("ScrollingFrame", mainFrame)
     contentZone.Position = UDim2.new(0, 160, 0, 63)
     contentZone.Size = UDim2.new(1, -170, 1, -80)
@@ -150,7 +167,7 @@ function UI.CreateMainGui()
     UI.Tabs = tabs
     UI.Gui = gui
 
-    print("✅ UI с тремя кнопками загружен!")
+    print("✅ UI загружен (3 кнопки + ресайз)")
     return UI
 end
 
