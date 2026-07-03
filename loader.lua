@@ -32,7 +32,7 @@ local modules = {"settings"}
 
 for _, moduleName in ipairs(modules) do
     local success, err = pcall(function()
-        local moduleCode = game:HttpGet("https://raw.githubusercontent.com/ВАШ_НИК/ВАШ_РЕПО/main/modules/" .. moduleName .. ".lua", true)
+        local moduleCode = game:HttpGet("https://github.com/georgiy8/Pilgrammed-modular-utility/tree/main/modules/" .. moduleName .. ".lua", true)
         local func = loadstring(moduleCode)
         func(guiSystem)
     end)
