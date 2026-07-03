@@ -4,11 +4,8 @@ local UI = {}
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
-local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-
-local zoneGap, titleHeight = 10, 45
 
 local tabs = {}
 
@@ -27,7 +24,7 @@ function UI.CreateMainGui()
 
     -- Title Bar
     local titleBar = Instance.new("Frame", mainFrame)
-    titleBar.Size = UDim2.new(1, -20, 0, titleHeight)
+    titleBar.Size = UDim2.new(1, -20, 0, 45)
     titleBar.Position = UDim2.new(0, 10, 0, 10)
     titleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     titleBar.Active = true
@@ -61,22 +58,15 @@ function UI.CreateMainGui()
     createTitleBtn("🔽", -82, function() mainFrame.Visible = false end)
     createTitleBtn("❌", -42, function() gui:Destroy() end)
 
-    -- ==================== RESIZE HANDLE ====================
+    -- ==================== RESIZE CUBE ====================
     local resizeHandle = Instance.new("Frame", mainFrame)
-    resizeHandle.Size = UDim2.new(0, 30, 0, 30)
-    resizeHandle.Position = UDim2.new(1, -30, 1, -30)
-    resizeHandle.BackgroundTransparency = 0.3
-    resizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    resizeHandle.ZIndex = 100
+    resizeHandle.Name = "ResizeHandle"
+    resizeHandle.Size = UDim2.new(0, 28, 0, 28)
+    resizeHandle.Position = UDim2.new(1, -28, 1, -28)
+    resizeHandle.BackgroundColor3 = Color3.fromRGB(75, 75, 75)  -- Чуть светлее основного
+    resizeHandle.BorderSizePixel = 0
+    resizeHandle.ZIndex = 999
     Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 6)
-
-    local resizeLabel = Instance.new("TextLabel", resizeHandle)
-    resizeLabel.Size = UDim2.new(1, 0, 1, 0)
-    resizeLabel.BackgroundTransparency = 1
-    resizeLabel.Text = "↘"
-    resizeLabel.TextSize = 24
-    resizeLabel.Font = Enum.Font.GothamBold
-    resizeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 
     local resizing = false
 
@@ -94,41 +84,36 @@ function UI.CreateMainGui()
 
     UserInputService.InputChanged:Connect(function(input)
         if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mousePos = UserInputService:GetMouseLocation()
-            local guiInset = GuiService:GetGuiInset()
+            local mouse = UserInputService:GetMouseLocation()
+            local inset = GuiService:GetGuiInset()
             
-            local newW = math.clamp(mousePos.X - mainFrame.AbsolutePosition.X + 15, 520, 950)
-            local newH = math.clamp(mousePos.Y - mainFrame.AbsolutePosition.Y - guiInset.Y + 15, 420, 750)
+            local newWidth = math.clamp(mouse.X - mainFrame.AbsolutePosition.X + 10, 520, 1000)
+            local newHeight = math.clamp(mouse.Y - mainFrame.AbsolutePosition.Y - inset.Y + 10, 420, 800)
             
-            mainFrame.Size = UDim2.new(0, newW, 0, newH)
+            mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
         end
     end)
 
-    -- Tab Panel
+    -- Tab Panel + Content (без изменений)
     local tabPanel = Instance.new("ScrollingFrame", mainFrame)
-    tabPanel.Name = "TabPanel"
-    tabPanel.Position = UDim2.new(0, 10, 0, titleHeight + 18)
-    tabPanel.Size = UDim2.new(0, 140, 1, -(titleHeight + 55))
+    tabPanel.Position = UDim2.new(0, 10, 0, 63)
+    tabPanel.Size = UDim2.new(0, 140, 1, -80)
     tabPanel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     tabPanel.BorderSizePixel = 0
-    tabPanel.ScrollBarThickness = 6
     Instance.new("UICorner", tabPanel).CornerRadius = UDim.new(0, 8)
 
     Instance.new("UIListLayout", tabPanel).Padding = UDim.new(0, 6)
 
-    -- Content
     local contentZone = Instance.new("ScrollingFrame", mainFrame)
-    contentZone.Name = "ContentZone"
-    contentZone.Position = UDim2.new(0, 160, 0, titleHeight + 18)
-    contentZone.Size = UDim2.new(1, -170, 1, -(titleHeight + 55))
+    contentZone.Position = UDim2.new(0, 160, 0, 63)
+    contentZone.Size = UDim2.new(1, -170, 1, -80)
     contentZone.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     contentZone.BorderSizePixel = 0
-    contentZone.ScrollBarThickness = 6
     Instance.new("UICorner", contentZone).CornerRadius = UDim.new(0, 8)
 
     Instance.new("UIListLayout", contentZone).Padding = UDim.new(0, 12)
 
-    -- Drag Title Bar
+    -- Drag
     local dragging = false
     local dragStart, startPos
 
@@ -157,7 +142,7 @@ function UI.CreateMainGui()
     UI.Tabs = tabs
     UI.Gui = gui
 
-    print("✅ UI + Ресайз загружен!")
+    print("✅ UI с кубиком для ресайза загружен!")
     return UI
 end
 
