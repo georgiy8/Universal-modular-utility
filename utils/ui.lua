@@ -24,7 +24,7 @@ function UI.CreateMainGui()
     mainFrame.BorderSizePixel = 0
     Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
 
-    -- ==================== TITLE BAR ====================
+    -- Title Bar
     local titleBar = Instance.new("Frame", mainFrame)
     titleBar.Size = UDim2.new(1, -20, 0, titleHeight)
     titleBar.Position = UDim2.new(0, 10, 0, 10)
@@ -42,7 +42,7 @@ function UI.CreateMainGui()
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Title Buttons с крупными эмодзи
+    -- Title Buttons
     local function createTitleBtn(text, xOffset, callback)
         local btn = Instance.new("TextButton", titleBar)
         btn.Size = UDim2.new(0, 36, 0, 36)
@@ -55,18 +55,50 @@ function UI.CreateMainGui()
         btn.BorderSizePixel = 0
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
         btn.MouseButton1Click:Connect(callback)
-        return btn
     end
 
-    createTitleBtn("🔽", -82, function()
-        mainFrame.Visible = false
+    createTitleBtn("🔽", -82, function() mainFrame.Visible = false end)
+    createTitleBtn("❌", -42, function() gui:Destroy() end)
+
+    -- ==================== RESIZE HANDLE ====================
+    local resizeHandle = Instance.new("TextButton", mainFrame)
+    resizeHandle.Size = UDim2.new(0, 25, 0, 25)
+    resizeHandle.Position = UDim2.new(1, -25, 1, -25)
+    resizeHandle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    resizeHandle.Text = "↘"
+    resizeHandle.TextSize = 18
+    resizeHandle.Font = Enum.Font.GothamBold
+    resizeHandle.TextColor3 = Color3.fromRGB(200, 200, 200)
+    resizeHandle.BorderSizePixel = 0
+    Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 6)
+
+    local resizing = false
+
+    resizeHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            resizing = true
+        end
     end)
 
-    createTitleBtn("❌", -42, function()
-        gui:Destroy()
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            resizing = false
+        end
     end)
 
-    -- ==================== TAB PANEL ====================
+    UserInputService.InputChanged:Connect(function(input)
+        if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mouse = UserInputService:GetMouseLocation()
+            local inset = GuiService:GetGuiInset()
+            
+            local newWidth = math.clamp(mouse.X - mainFrame.AbsolutePosition.X + 10, 500, 900)
+            local newHeight = math.clamp(mouse.Y - mainFrame.AbsolutePosition.Y - inset.Y + 10, 400, 700)
+            
+            mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+        end
+    end)
+
+    -- Tab Panel и Content (тот же код что раньше)
     local tabPanel = Instance.new("ScrollingFrame", mainFrame)
     tabPanel.Name = "TabPanel"
     tabPanel.Position = UDim2.new(0, 10, 0, titleHeight + 18)
@@ -78,7 +110,6 @@ function UI.CreateMainGui()
 
     Instance.new("UIListLayout", tabPanel).Padding = UDim.new(0, 6)
 
-    -- ==================== CONTENT ====================
     local contentZone = Instance.new("ScrollingFrame", mainFrame)
     contentZone.Name = "ContentZone"
     contentZone.Position = UDim2.new(0, 160, 0, titleHeight + 18)
@@ -90,7 +121,7 @@ function UI.CreateMainGui()
 
     Instance.new("UIListLayout", contentZone).Padding = UDim.new(0, 12)
 
-    -- Drag
+    -- Drag (тот же)
     local dragging = false
     local dragStart, startPos
 
@@ -119,10 +150,11 @@ function UI.CreateMainGui()
     UI.Tabs = tabs
     UI.Gui = gui
 
-    print("✅ Полноценное меню загружено!")
+    print("✅ UI с ресайзом загружен!")
     return UI
 end
 
+-- CreateTab функция (оставляем как в предыдущей версии)
 function UI.CreateTab(name, icon, order)
     local tab = {Name = name, Container = nil, Button = nil}
 
