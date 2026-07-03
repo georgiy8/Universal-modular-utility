@@ -2,39 +2,46 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
+print("🔄 Pilgrammed Utility Modular Loader v1")
+
 -- Загрузка конфига
-local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/georgiy8/Pilgrammed-modular-utility/refs/heads/main/Config.lua"))()
--- Или если тестируешь локально:
--- local Config = require(script.Parent.config)
+local successConfig, Config = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/ВАШ_НИК/ВАШ_РЕПО/main/config.lua", true))()
+end)
 
-print("✅ Pilgrammed Utility v" .. Config.Version .. " - Loading...")
+if not successConfig then
+    warn("❌ Ошибка загрузки config.lua")
+end
 
--- Загрузка UI системы
-local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/georgiy8/Pilgrammed-modular-utility/refs/heads/main/utils/ui.lua"))()
+-- Загрузка UI
+local successUI, UI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/ВАШ_НИК/ВАШ_РЕПО/main/utils/ui.lua", true))()
+end)
 
--- Создание главного GUI
-local MainGui = UI.CreateMainGui()
+if not successUI then
+    warn("❌ Ошибка загрузки ui.lua")
+    return
+end
 
--- Функция загрузки модулей
-local function LoadModule(name)
-    local success, module = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/ТВОЙ_НИК/ТВОЙ_РЕПОЗИТОРИЙ/main/modules/" .. name .. ".lua"))()
+local guiSystem = UI.CreateMainGui()
+
+print("✅ GUI создан успешно")
+
+-- Загрузка модулей
+local modules = {"settings"}
+
+for _, moduleName in ipairs(modules) do
+    local success, err = pcall(function()
+        local moduleCode = game:HttpGet("https://raw.githubusercontent.com/ВАШ_НИК/ВАШ_РЕПО/main/modules/" .. moduleName .. ".lua", true)
+        local func = loadstring(moduleCode)
+        func(guiSystem)
     end)
     
-    if success and module then
-        pcall(module, MainGui) -- Передаём GUI в модуль
-        print("✅ Module loaded: " .. name)
+    if success then
+        print("✅ Module loaded: " .. moduleName)
     else
-        warn("❌ Failed to load module: " .. name)
+        warn("❌ Failed to load " .. moduleName .. " | Error: " .. tostring(err))
     end
 end
 
--- Загрузка всех модулей
-wait(0.5)
-LoadModule("settings")
-LoadModule("main")
-LoadModule("floating")
-LoadModule("fishing")
-LoadModule("mining")
-
-print("🎉 Pilgrammed Utility fully loaded!")
+print("🎉 Loader finished!")
