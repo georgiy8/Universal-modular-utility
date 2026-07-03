@@ -2,9 +2,9 @@
 return function(UI)
     local Config = shared.PilgrammedConfig or {DefaultSettings = {}}
 
-local settingsTab = UI.CreateTab("Settings", "⚙️", 1)
+    local settingsTab = UI.CreateTab("Settings", "⚙️", 1)
 
-local title = Instance.new("TextLabel", settingsTab)
+    local title = Instance.new("TextLabel", settingsTab.Container)
     title.Size = UDim2.new(1, -20, 0, 40)
     title.BackgroundTransparency = 1
     title.Text = "🎨 Настройки интерфейса"
