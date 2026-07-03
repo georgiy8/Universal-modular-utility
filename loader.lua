@@ -10,7 +10,7 @@ local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/georgi
 print("✅ Pilgrammed Utility v" .. Config.Version .. " - Loading...")
 
 -- Загрузка UI системы
-local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/ТВОЙ_НИК/ТВОЙ_РЕПОЗИТОРИЙ/main/utils/ui.lua"))()
+local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/georgiy8/Pilgrammed-modular-utility/refs/heads/main/utils/ui.lua"))()
 
 -- Создание главного GUI
 local MainGui = UI.CreateMainGui()
