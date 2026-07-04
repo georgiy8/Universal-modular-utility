@@ -26,3 +26,4 @@ for _, moduleName in ipairs(modules) do
 end
 
 print("🎉 Полная загрузка завершена!")
+
