@@ -1,4 +1,3 @@
-
 local Mining = {}
 
 function Mining.Init(Core, Config)
@@ -213,8 +212,6 @@ function Mining.Init(Core, Config)
         GetOreName = getOreName
     }
 end
-
-return Mining
 
     local autoMining = false
     local autoTool = false
@@ -520,3 +517,5 @@ return Mining
             equipTool(selectedTool)
         end
     end)
+
+return Mining
