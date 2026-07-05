@@ -1,3 +1,21 @@
+local REPO = "https://raw.githubusercontent.com/georgiy8/Pilgrammed-modular-utility/main/"
+
+local function Import(path)
+
+    local Success, Result = pcall(function()
+
+        return loadstring(game:HttpGet(REPO .. path))()
+
+    end)
+
+    if not Success then
+        error(Result)
+    end
+
+    return Result
+
+end
+
 --========================================================--
 -- Pilgrammed GUI Library
 -- core.lua
@@ -14,6 +32,9 @@ local Players = game:GetService("Players")
 
 local Player = Players.LocalPlayer
 
+local Drag = Import("gui/services/drag.lua")
+
+local Resize = Import("gui/services/resize.lua")
 ------------------------------------------------------------
 -- Window Class
 ------------------------------------------------------------
