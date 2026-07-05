@@ -160,6 +160,26 @@ function Core:CreateWindow(Settings)
     self.Content = Content
 
     --------------------------------------------------------
+     Resize Handle
+    --------------------------------------------------------
+
+    local ResizeHandle = Instance.new("Frame")
+
+    ResizeHandle.Name = "ResizeHandle"
+    ResizeHandle.Parent = MainFrame
+
+    ResizeHandle.Size = UDim2.fromOffset(14,14)
+    ResizeHandle.AnchorPoint = Vector2.new(1,1)
+    ResizeHandle.Position = UDim2.new(1,-3,1,-3)
+
+    ResizeHandle.BackgroundColor3 = Color3.fromRGB(90,90,90)
+    ResizeHandle.BorderSizePixel = 0
+
+    Instance.new("UICorner", ResizeHandle).CornerRadius = UDim.new(0,3)
+
+    Resize.Enable(MainFrame, ResizeHandle)
+
+    --------------------------------------------------------
 
     self.Tabs = {}
 
