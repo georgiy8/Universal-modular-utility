@@ -829,6 +829,36 @@ function Window:Destroy()
     if self.Gui then
 
         self.Gui:Destroy()
+
+        function Window:Destroy()
+
+    if self.Gui then
+
+        self.Gui:Destroy()
+
+        self.Gui = nil
+        self.MainFrame = nil
+        self.TitleBar = nil
+        self.TitleLabel = nil
+        self.TabPanel = nil
+        self.Content = nil
+        self.ResizeHandle = nil
+
+    end
+
+    for Index, Object in ipairs(self.Library.Windows) do
+
+        if Object == self then
+
+            table.remove(self.Library.Windows, Index)
+
+            break
+
+        end
+
+    end
+
+end
     end
 
     for Index, Object in ipairs(self.Library.Windows) do
@@ -888,6 +918,8 @@ end
 ------------------------------------------------------------
 
 function Window:SetTitle(Text)
+
+    self.TitleText = Text
 
     self.TitleLabel.Text = Text
 
