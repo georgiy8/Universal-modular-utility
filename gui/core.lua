@@ -232,10 +232,21 @@ local CloseButton = CreateControl("X")
 --------------------------------------------------------
 
 selfWindow.MinimizeButton = MinimizeButton
-
 selfWindow.MaximizeButton = MaximizeButton
-
 selfWindow.CloseButton = CloseButton
+    
+    MinimizeButton.MouseButton1Click:Connect(function()
+        selfWindow:Minimize()
+    end)
+
+    MaximizeButton.MouseButton1Click:Connect(function()
+        selfWindow:Maximize()
+    end)
+
+    CloseButton.MouseButton1Click:Connect(function()
+        selfWindow:Close()
+    end)
+    
     --------------------------------------------------------
     local Title = Instance.new("TextLabel")
     Title.Parent = TitleBar
@@ -917,6 +928,38 @@ function Library:Destroy()
 
     table.clear(self.Windows)
 
+end
+
+------------------------------------------------------------
+-- Window Control Methods
+------------------------------------------------------------
+function Window:Minimize()
+    if self.MainFrame then
+        self.MainFrame.Visible = false
+    end
+end
+
+function Window:Maximize()
+    if self.MainFrame then
+        self.MainFrame.Visible = true
+    end
+end
+
+function Window:Close()
+    if self.Gui then
+        self.Gui:Destroy()
+        self.Gui = nil
+    end
+    
+    -- Удаляем окно из списка
+    if self.Library and self.Library.Windows then
+        for i, win in ipairs(self.Library.Windows) do
+            if win == self then
+                table.remove(self.Library.Windows, i)
+                break
+            end
+        end
+    end
 end
 
 ------------------------------------------------------------
