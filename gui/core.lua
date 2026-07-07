@@ -747,8 +747,6 @@ local WidgetMethods = {
 
     "Image"
 
-    "Sound"
-
 }
 
 for _, WidgetName in ipairs(WidgetMethods) do
