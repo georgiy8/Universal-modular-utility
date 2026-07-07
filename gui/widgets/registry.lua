@@ -45,6 +45,10 @@ Widgets.Separator = Import("gui/widgets/separator.lua")
 
 Widgets.Keybind = Import("gui/widgets/keybind.lua")
 
+Widgets.Image = Import("gui/widgets/image.lua")
+
+Widgets.Sound = Import("gui/widgets/sound.lua")
+
 ------------------------------------------------------------
 
 return Widgets
