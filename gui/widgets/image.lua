@@ -31,7 +31,7 @@ function Image.Create(Parent, Settings)
 
     ImageObject.Parent = Parent
 
-    ImageObject.Size = UDim2.new(1,-10,0,Height)
+    ImageObject.Size = UDim2.new(1,0,0,Height)
 
     ImageObject.BackgroundTransparency = 1
 
