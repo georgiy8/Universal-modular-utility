@@ -15,22 +15,30 @@ return function(Window)
     })
 
     --------------------------------------------------------
-    -- Image Section
+    -- Image
     --------------------------------------------------------
 
-    local ImageSection = Phantom:CreateSection({
+    local Preview = Phantom:CreateSection({
 
-        Name = "Phantom Lancer"
+        Name = "Preview"
+
+    })
+
+    local PhantomImage = Preview:AddImage({
+
+        Image = getcustomasset("assets/phantom.png"),
+
+        Height = 300,
+
+        Transparency = 0,
+
+        BackgroundTransparency = 1,
+
+        ScaleType = Enum.ScaleType.Fit
 
     })
 
 
-    ImageSection:AddImage({
-
-        Image = "assets/phantom.png",
-
-        AspectRatio = 1
-
-    })
+    PhantomImage:SetAspectRatio(1, 1)
 
 end
