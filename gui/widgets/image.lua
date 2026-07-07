@@ -103,7 +103,7 @@ end
 
 function Image:SetScaleType(ScaleType)
 
-    self.Instance.ClipsDescendants = true
+    ImageObject.ClipsDescendants = true
 
     self.Instance.ScaleType = ScaleType
 
