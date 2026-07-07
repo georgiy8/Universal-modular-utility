@@ -5,6 +5,8 @@
 
 local Label = {}
 
+Label.__index = Label
+
 ------------------------------------------------------------
 -- Create Label
 ------------------------------------------------------------
@@ -12,6 +14,8 @@ local Label = {}
 function Label.Create(Parent, Settings)
 
     Settings = Settings or {}
+
+    local self = setmetatable({}, Label)
 
     local Text = Settings.Text or "Label"
 
@@ -35,7 +39,59 @@ function Label.Create(Parent, Settings)
 
     LabelObject.TextXAlignment = Enum.TextXAlignment.Left
 
-    return LabelObject
+    self.Instance = LabelObject
+
+    return self
+
+end
+
+------------------------------------------------------------
+-- Set Text
+------------------------------------------------------------
+
+function Label:SetText(Text)
+
+    self.Instance.Text = Text
+
+end
+
+------------------------------------------------------------
+-- Get Text
+------------------------------------------------------------
+
+function Label:GetText()
+
+    return self.Instance.Text
+
+end
+
+------------------------------------------------------------
+-- Set Color
+------------------------------------------------------------
+
+function Label:SetColor(Color)
+
+    self.Instance.TextColor3 = Color
+
+end
+
+------------------------------------------------------------
+-- Set Visible
+------------------------------------------------------------
+
+function Label:SetVisible(State)
+
+    self.Instance.Visible = State
+
+end
+
+------------------------------------------------------------
+-- Destroy
+------------------------------------------------------------
+
+function Label:Destroy()
+
+    self.Instance:Destroy()
 
 end
 
