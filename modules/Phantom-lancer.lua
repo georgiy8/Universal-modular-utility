@@ -22,33 +22,30 @@ return function(Window)
     })
     
     --------------------------------------------------------
-    -- Main Phantom Lancer Image
+    -- Main Image with error handling
     --------------------------------------------------------
-    Images:AddImage({
-        Image = getcustomasset("assets/Phantom-lancer/Images/phantom_lancer_pl.jpg"),
-        Height = 220,
-        AspectRatio = 16/9,
-        BackgroundTransparency = 0,
-        BackgroundColor = Color3.fromRGB(25, 25, 25)
-    })
+    local success, err = pcall(function()
+        Images:AddImage({
+            Image = getcustomasset("assets/Phantom-lancer/Images/phantom_lancer_pl.jpg"),
+            Height = 220,
+            AspectRatio = 16/9,
+            BackgroundTransparency = 0,
+            BackgroundColor = Color3.fromRGB(30, 30, 30)
+        })
+    end)
     
-    --------------------------------------------------------
-    -- Info Section
-    --------------------------------------------------------
-    local Info = Visual:CreateSection({
-        Name = "Information"
-    })
-    
-    Info:AddLabel({
-        Text = "👤 Phantom Lancer Preview"
-    })
-    
-    Info:AddLabel({
-        Text = "✅ Asset loaded from customassets"
-    })
-    
-    Info:AddLabel({
-        Text = "Path: assets/Phantom-lancer/Images/phantom_lancer_pl.jpg"
-    })
+    if not success then
+        Images:AddLabel({
+            Text = "❌ Failed to load image"
+        })
+        Images:AddLabel({
+            Text = "Path: assets/Phantom-lancer/Images/phantom_lancer_pl.jpg"
+        })
+        warn("Image load error:", err)
+    else
+        Images:AddLabel({
+            Text = "✅ Phantom Lancer image loaded"
+        })
+    end
     
 end
