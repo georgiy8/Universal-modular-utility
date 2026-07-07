@@ -22,11 +22,11 @@ return function(Window)
     })
     
     --------------------------------------------------------
-    -- Main Image
+    -- Main Image (PNG)
     --------------------------------------------------------
     local success, err = pcall(function()
         Images:AddImage({
-            Image = getcustomasset("assets/phantom.jpg"),
+            Image = getcustomasset("assets/phantom.png"),   -- ← PNG версия
             Height = 220,
             AspectRatio = 16/9,
             BackgroundTransparency = 0,
@@ -36,15 +36,26 @@ return function(Window)
     
     if success then
         Images:AddLabel({
-            Text = "✅ Image loaded successfully"
+            Text = "✅ Phantom Lancer PNG loaded"
         })
     else
         Images:AddLabel({
-            Text = "❌ Failed to load image"
+            Text = "❌ Failed to load PNG"
         })
         Images:AddLabel({
-            Text = "Path: assets/phantom.jpg"
+            Text = "Path: assets/phantom.png"
         })
-        warn("Image Error:", err)
+        warn("Image Load Error:", err)
     end
+    
+    --------------------------------------------------------
+    -- Info
+    --------------------------------------------------------
+    local Info = Visual:CreateSection({
+        Name = "Information"
+    })
+    
+    Info:AddLabel({ Text = "Current path: assets/phantom.png" })
+    Info:AddLabel({ Text = "Make sure the file is PNG format" })
+    
 end
