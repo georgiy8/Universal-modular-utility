@@ -37,6 +37,8 @@ function Image.Create(Parent, Settings)
 
     ImageObject.BorderSizePixel = 0
 
+    ImageObject.ClipsDescendants = true
+
     ImageObject.ScaleType = ScaleType
 
     ImageObject.Image = Settings.Image or ""
@@ -102,8 +104,6 @@ end
 ------------------------------------------------------------
 
 function Image:SetScaleType(ScaleType)
-
-    ImageObject.ClipsDescendants = true
 
     self.Instance.ScaleType = ScaleType
 
