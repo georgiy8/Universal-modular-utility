@@ -57,7 +57,8 @@ ImageObject.ImageTransparency = Settings.Transparency or 0
 
 ImageObject.BackgroundColor3 = Settings.BackgroundColor or Color3.new(1,1,1)
 
-ImageObject.BackgroundTransparency = Settings.BackgroundTransparency or 1
+    ImageObject.BackgroundTransparency = 0
+ImageObject.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
   
     Instance.new("UICorner",ImageObject).CornerRadius = UDim.new(0,6)
 
