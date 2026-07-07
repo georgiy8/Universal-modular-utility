@@ -43,16 +43,6 @@ function Image.Create(Parent, Settings)
 
     ImageObject.Image = Settings.Image or ""
 
-  if Settings.AspectRatio then
-
-    local Constraint = Instance.new("UIAspectRatioConstraint")
-
-    Constraint.AspectRatio = Settings.AspectRatio
-
-    Constraint.Parent = ImageObject
-
-end
-
 ImageObject.ImageTransparency = Settings.Transparency or 0
 
 ImageObject.BackgroundColor3 = Settings.BackgroundColor or Color3.new(1,1,1)
@@ -202,25 +192,7 @@ function Image:SetVisible(State)
 
 end
 
-------------------------------------------------------------
--- Set Aspect Ratio
-------------------------------------------------------------
 
-function Image:SetAspectRatio(Ratio)
-
-    local Constraint = self.Instance:FindFirstChildOfClass("UIAspectRatioConstraint")
-
-    if not Constraint then
-
-        Constraint = Instance.new("UIAspectRatioConstraint")
-
-        Constraint.Parent = self.Instance
-
-    end
-
-    Constraint.AspectRatio = Ratio
-
-end
 
 ------------------------------------------------------------
 -- Destroy
