@@ -5,8 +5,8 @@
 
 local AssetManager = {}
 
-AssetManager.Downloaded = 0
-AssetManager.Verified = 0
+-AssetManager.Downloaded = 0
+-AssetManager.Verified = 0
 
 ------------------------------------------------------------
 -- Repository
@@ -47,7 +47,7 @@ end
         
     end)
     if WriteSuccess then
-          self.Downloaded = self.Downloaded + 1
+          -self.Downloaded = self.Downloaded + 1
         print("[AssetManager] Saved:", LocalPath)
         return true
     end
@@ -80,7 +80,7 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
         self:Download(item.download_url, NewLocalPath)
 
     else
-                self.Verified = self.Verified + 1
+                -self.Verified = self.Verified + 1
 
         print("[AssetManager] Verified:", NewLocalPath)
 
