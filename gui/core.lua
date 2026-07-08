@@ -48,6 +48,13 @@ AssetManager:Init()
 ------------------------------------------------------------
 
 local Widgets = Import("gui/widgets/registry.lua")
+print("Widgets table:", Widgets)
+
+for k, v in pairs(Widgets) do
+    print("[Widget]", k, v)
+end
+
+print("Label =", Widgets.Label)
 
 ------------------------------------------------------------
 -- Library
