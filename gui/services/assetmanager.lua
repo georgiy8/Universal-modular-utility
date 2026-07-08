@@ -1,6 +1,6 @@
---========================================================--
+Грок смог починить --========================================================--
 -- Pilgrammed GUI Library
--- Asset Manager (Recursive with Delay)
+-- Asset Manager (Recursive with Counter)
 --========================================================--
 
 local AssetManager = {}
@@ -59,7 +59,7 @@ function AssetManager:Download(Url, LocalPath)
 end
 
 ------------------------------------------------------------
--- Recursive Scan with Delay
+-- Recursive Scan
 ------------------------------------------------------------
 function AssetManager:ScanFolder(GithubPath, LocalPath)
     local Url = "https://api.github.com/repos/" .. USER .. "/" .. REPO_NAME .. "/contents/" .. GithubPath .. "?ref=" .. BRANCH
@@ -73,14 +73,7 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
         return
     end
    
-    local Success2, Items = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(Response)
-    end)
-   
-    if not Success2 then
-        warn("[AssetManager] JSON parse error in:", GithubPath)
-        return
-    end
+    local Items = game:GetService("HttpService"):JSONDecode(Response)
    
     for _, item in ipairs(Items) do
         local NewGithubPath = GithubPath .. "/" .. item.name
@@ -89,13 +82,12 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
         if item.type == "file" then
             if isfile(NewLocalPath) then
                 self.Verified = self.Verified + 1
+                print("[AssetManager] Verified:", NewLocalPath)
             else
                 self:Download(item.download_url, NewLocalPath)
-                task.wait(0.3) -- задержка между скачиваниями
             end
         elseif item.type == "dir" then
             print("[AssetManager] Entering folder:", item.name)
-            task.wait(0.2)
             self:ScanFolder(NewGithubPath, NewLocalPath)
         end
     end
@@ -108,15 +100,13 @@ function AssetManager:Init()
     self.Downloaded = 0
     self.Verified = 0
     self:CreateFolder()
-    print("[AssetManager] Starting smart asset check...")
-    task.spawn(function()
-        self:ScanFolder("assets", "assets")
-        print(string.format(
-            "[AssetManager] Finished. Verified: %d | Downloaded: %d",
-            self.Verified,
-            self.Downloaded
-        ))
-    end)
+    print("[AssetManager] Starting recursive download from assets/...")
+    self:ScanFolder("assets", "assets")
+    print(string.format(
+        "[AssetManager] Finished. Verified: %d | Downloaded: %d",
+        self.Verified,
+        self.Downloaded
+    ))
 end
 
 ------------------------------------------------------------
