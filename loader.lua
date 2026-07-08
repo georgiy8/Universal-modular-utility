@@ -42,6 +42,7 @@ local Modules = {
     "floating",
     "settings",
     "Phantom-lancer"
+    "mp3player"
 }
 
 for _, moduleName in ipairs(Modules) do
