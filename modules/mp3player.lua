@@ -4,45 +4,36 @@
 
 return function(Window)
     local Tab = Window:CreateTab({
-        Name = "MP3 Player",
+        Name = "Sound Test",
         Icon = "🎵"
     })
     
-    local PlayerSection = Tab:CreateSection({
-        Name = "Player"
+    local Section = Tab:CreateSection({
+        Name = "Phantom Lancer Sounds"
     })
     
-    -- Текущий звук
     local CurrentSound = nil
     
-    PlayerSection:AddButton({
-        Text = "Play Music",
+    Section:AddButton({
+        Text = "Play Last Hit Sound",
         Callback = function()
             if CurrentSound then
                 CurrentSound:Stop()
             end
             
+            local path = "assets/Phantom-lancer/Sounds/Plance_lasthit_03_ru.mp3.mpeg"
+            
             CurrentSound = Instance.new("Sound")
-            CurrentSound.SoundId = getcustomasset("assets\Phantom-lancer\Sounds\Plance_lasthit_03_ru.mp3.mpeg") -- замени на свой файл
-            CurrentSound.Volume = 0.6
-            CurrentSound.Looped = true
+            CurrentSound.SoundId = getcustomasset(path)
+            CurrentSound.Volume = 0.8
             CurrentSound.Parent = game:GetService("SoundService")
             CurrentSound:Play()
             
-            print("Music started")
+            print("Playing:", path)
         end
     })
     
-    PlayerSection:AddButton({
-        Text = "Pause",
-        Callback = function()
-            if CurrentSound then
-                CurrentSound:Pause()
-            end
-        end
-    })
-    
-    PlayerSection:AddButton({
+    Section:AddButton({
         Text = "Stop",
         Callback = function()
             if CurrentSound then
@@ -51,26 +42,7 @@ return function(Window)
         end
     })
     
-    PlayerSection:AddSlider({
-        Text = "Volume",
-        Min = 0,
-        Max = 1,
-        Default = 0.6,
-        Increment = 0.05,
-        Callback = function(Value)
-            if CurrentSound then
-                CurrentSound.Volume = Value
-            end
-        end
-    })
-    
-    PlayerSection:AddToggle({
-        Text = "Loop",
-        Default = true,
-        Callback = function(State)
-            if CurrentSound then
-                CurrentSound.Looped = State
-            end
-        end
+    Section:AddLabel({
+        Text = "Path: assets/Phantom-lancer/Sounds/Plance_lasthit_03_ru.mp3.mpeg"
     })
 end
