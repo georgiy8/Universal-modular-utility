@@ -5,9 +5,6 @@
 
 local AssetManager = {}
 
--AssetManager.Downloaded = 0
--AssetManager.Verified = 0
-
 ------------------------------------------------------------
 -- Repository
 ------------------------------------------------------------
@@ -37,17 +34,12 @@ function AssetManager:Download(Url, LocalPath)
         warn("[AssetManager] Download failed:", LocalPath)
         return false
     end
-local Dir = LocalPath:match("(.*/)")
-
-if Dir and not isfolder(Dir) then
-    makefolder(Dir)
-end
+    local Dir = LocalPath:match("(.*/)")
+    if Dir then makefolder(Dir) end
     local WriteSuccess = pcall(function()
         writefile(LocalPath, Data)
-        
     end)
     if WriteSuccess then
-          -self.Downloaded = self.Downloaded + 1
         print("[AssetManager] Saved:", LocalPath)
         return true
     end
@@ -75,22 +67,13 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
         local NewGithubPath = GithubPath .. "/" .. item.name
         local NewLocalPath = LocalPath .. "/" .. item.name
         
-  if item.type == "file" then
-    if not isfile(NewLocalPath) then
-        self:Download(item.download_url, NewLocalPath)
-
-    else
-                -self.Verified = self.Verified + 1
-
-        print("[AssetManager] Verified:", NewLocalPath)
-
+        if item.type == "file" then
+            self:Download(item.download_url, NewLocalPath)
+        elseif item.type == "dir" then
+            print("[AssetManager] Entering folder:", item.name)
+            self:ScanFolder(NewGithubPath, NewLocalPath)
+        end
     end
-
-elseif item.type == "dir" then
-    print("[AssetManager] Entering folder:", item.name)
-    self:ScanFolder(NewGithubPath, NewLocalPath)
-
-end
 end
 
 ------------------------------------------------------------
@@ -102,6 +85,7 @@ function AssetManager:Init()
     self:ScanFolder("assets", "assets")
     print("[AssetManager] All assets verified and downloaded.")
 end
+
 ------------------------------------------------------------
 -- Get Asset
 ------------------------------------------------------------
@@ -115,5 +99,3 @@ end
 
 ------------------------------------------------------------
 return AssetManager
-
-        
