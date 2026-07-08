@@ -73,16 +73,22 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
         return
     end
    
-    local Items = game:GetService("HttpService"):JSONDecode(Response)
+    local Success2, Items = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(Response)
+    end)
+    
+    if not Success2 then
+        warn("[AssetManager] JSON parse error in:", GithubPath)
+        return
+    end
    
     for _, item in ipairs(Items) do
         local NewGithubPath = GithubPath .. "/" .. item.name
         local NewLocalPath = LocalPath .. "/" .. item.name
-        
+       
         if item.type == "file" then
             if isfile(NewLocalPath) then
                 self.Verified = self.Verified + 1
-                -- print("[AssetManager] Verified:", NewLocalPath) -- можно раскомментировать
             else
                 self:Download(item.download_url, NewLocalPath)
             end
