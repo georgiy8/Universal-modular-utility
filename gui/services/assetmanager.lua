@@ -126,3 +126,341 @@ function AssetManager:Download(URL, LocalPath)
     return false
 
 end
+
+------------------------------------------------------------
+-- GitHub Recursive Scan
+------------------------------------------------------------
+
+function AssetManager:ScanFolder(GithubPath, LocalPath)
+
+    local URL =
+        "https://api.github.com/repos/"
+        .. USER
+        .. "/"
+        .. REPO
+        .. "/contents/"
+        .. GithubPath
+        .. "?ref="
+        .. BRANCH
+
+    local Success, Response = pcall(function()
+
+        return game:HttpGet(URL)
+
+    end)
+
+    if not Success then
+
+        warn("[AssetManager] Failed to scan:", GithubPath)
+
+        return
+
+    end
+
+    local HttpService = game:GetService("HttpService")
+
+    local Items = HttpService:JSONDecode(Response)
+
+    for _, Item in ipairs(Items) do
+
+        local GithubItem = GithubPath .. "/" .. Item.name
+        local LocalItem = LocalPath .. "/" .. Item.name
+
+        ----------------------------------------------------
+        -- File
+        ----------------------------------------------------
+
+        if Item.type == "file" then
+
+            if isfile(LocalItem) then
+
+                self.Verified += 1
+
+                print("[AssetManager] Verified:", LocalItem)
+
+            else
+
+                self:Download(Item.download_url, LocalItem)
+
+            end
+
+        ----------------------------------------------------
+        -- Directory
+        ----------------------------------------------------
+
+        elseif Item.type == "dir" then
+
+            print("[AssetManager] Entering:", GithubItem)
+
+            self:ScanFolder(
+                GithubItem,
+                LocalItem
+            )
+
+        end
+
+    end
+
+end
+
+------------------------------------------------------------
+-- Local Recursive Scan
+------------------------------------------------------------
+
+function AssetManager:IndexFolder(Path)
+
+    local Files = listfiles(Path)
+
+    for _, File in ipairs(Files) do
+
+        if isfolder(File) then
+
+            self:IndexFolder(File)
+
+        else
+
+            self:RegisterAsset(File)
+
+        end
+
+    end
+
+end
+
+------------------------------------------------------------
+-- Register Asset
+------------------------------------------------------------
+
+function AssetManager:RegisterAsset(File)
+
+    local Extension = File:match("%.([^.]+)$")
+
+    if not Extension then
+        return
+    end
+
+    Extension = Extension:lower()
+
+    --------------------------------------------------------
+    -- AssetId
+    --------------------------------------------------------
+
+    local Success, Asset = pcall(function()
+
+        return getcustomasset(File)
+
+    end)
+
+    if not Success or not Asset then
+
+        warn("[AssetManager] Failed to register:", File)
+
+        return
+
+    end
+
+    --------------------------------------------------------
+    -- Name
+    --------------------------------------------------------
+
+    local Name = File:match("[^\\/]+$")
+
+    --------------------------------------------------------
+    -- Relative Path
+    --------------------------------------------------------
+
+    local Relative = File
+        :gsub("\\","/")
+        :gsub("^assets/","")
+
+    --------------------------------------------------------
+    -- Duplicate Check
+    --------------------------------------------------------
+
+    if self.ByName[Name] then
+
+        warn("[AssetManager] Duplicate asset name:", Name)
+
+        self.Duplicates[Name] = true
+
+    end
+
+    --------------------------------------------------------
+    -- Global Index
+    --------------------------------------------------------
+
+    self.ByName[Name] = Asset
+
+    self.ByPath[Relative] = Asset
+
+    --------------------------------------------------------
+    -- Images
+    --------------------------------------------------------
+
+    if IMAGE_EXTENSIONS[Extension] then
+
+        self.Images[Name] = Asset
+
+        self.ImagesIndexed += 1
+
+        print("[Image]", Name)
+
+        return
+
+    end
+
+    --------------------------------------------------------
+    -- Sounds
+    --------------------------------------------------------
+
+    if SOUND_EXTENSIONS[Extension] then
+
+        self.Sounds[Name] = Asset
+
+        self.SoundsIndexed += 1
+
+        print("[Sound]", Name)
+
+        return
+
+    end
+
+    --------------------------------------------------------
+    -- Other
+    --------------------------------------------------------
+
+    self.OtherIndexed += 1
+
+    print("[Other]", Name)
+
+end
+
+------------------------------------------------------------
+-- Get Asset By Relative Path
+------------------------------------------------------------
+
+function AssetManager:Get(Path)
+
+    return self.ByPath[Path]
+
+end
+
+------------------------------------------------------------
+-- Get Image
+------------------------------------------------------------
+
+function AssetManager:GetImage(Name)
+
+    return self.Images[Name]
+
+end
+
+------------------------------------------------------------
+-- Get Sound
+------------------------------------------------------------
+
+function AssetManager:GetSound(Name)
+
+    return self.Sounds[Name]
+
+end
+
+------------------------------------------------------------
+-- Get By Name
+------------------------------------------------------------
+
+function AssetManager:GetByName(Name)
+
+    return self.ByName[Name]
+
+end
+
+------------------------------------------------------------
+-- Print Statistics
+------------------------------------------------------------
+
+function AssetManager:PrintStatistics()
+
+    print("----------------------------------------")
+    print("[AssetManager] Asset Index")
+    print("----------------------------------------")
+
+    print("Verified   :", self.Verified)
+    print("Downloaded :", self.Downloaded)
+
+    print("Images     :", self.ImagesIndexed)
+    print("Sounds     :", self.SoundsIndexed)
+    print("Other      :", self.OtherIndexed)
+
+    local DuplicateCount = 0
+
+    for _ in pairs(self.Duplicates) do
+        DuplicateCount += 1
+    end
+
+    print("Duplicates :", DuplicateCount)
+
+    print("----------------------------------------")
+
+end
+
+------------------------------------------------------------
+-- Init
+------------------------------------------------------------
+
+function AssetManager:Init()
+
+    --------------------------------------------------------
+    -- Reset Counters
+    --------------------------------------------------------
+
+    self.Downloaded = 0
+    self.Verified = 0
+
+    self.ImagesIndexed = 0
+    self.SoundsIndexed = 0
+    self.OtherIndexed = 0
+
+    --------------------------------------------------------
+    -- Clear Database
+    --------------------------------------------------------
+
+    table.clear(self.Images)
+    table.clear(self.Sounds)
+
+    table.clear(self.ByName)
+    table.clear(self.ByPath)
+
+    table.clear(self.Duplicates)
+
+    --------------------------------------------------------
+    -- Sync
+    --------------------------------------------------------
+
+    self:CreateFolder()
+
+    print("[AssetManager] Synchronizing assets...")
+
+    self:ScanFolder(
+        "assets",
+        "assets"
+    )
+
+    --------------------------------------------------------
+    -- Index
+    --------------------------------------------------------
+
+    print("[AssetManager] Building asset index...")
+
+    self:IndexFolder("assets")
+
+    --------------------------------------------------------
+    -- Done
+    --------------------------------------------------------
+
+    self:PrintStatistics()
+
+end
+
+------------------------------------------------------------
+return AssetManager
