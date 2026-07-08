@@ -376,6 +376,191 @@ function AssetManager:GetByName(Name)
 end
 
 ------------------------------------------------------------
+-- Exists
+------------------------------------------------------------
+
+function AssetManager:Exists(Path)
+
+    return self.ByPath[Path] ~= nil
+        or self.ByName[Path] ~= nil
+
+end
+
+------------------------------------------------------------
+-- Get Info
+------------------------------------------------------------
+
+function AssetManager:GetInfo(Name)
+
+    local Asset = self.ByName[Name]
+
+    if not Asset then
+        return nil
+    end
+
+    for Path, Id in pairs(self.ByPath) do
+
+        if Id == Asset then
+
+            local Extension = Path:match("%.([^.]+)$")
+
+            return {
+
+                Name = Name,
+
+                Path = Path,
+
+                Extension = Extension,
+
+                AssetId = Id
+
+            }
+
+        end
+
+    end
+
+end
+
+------------------------------------------------------------
+-- List Images
+------------------------------------------------------------
+
+function AssetManager:ListImages()
+
+    local Result = {}
+
+    for Name, Id in pairs(self.Images) do
+
+        table.insert(Result, {
+
+            Name = Name,
+
+            AssetId = Id
+
+        })
+
+    end
+
+    table.sort(Result,function(a,b)
+
+        return a.Name < b.Name
+
+    end)
+
+    return Result
+
+end
+
+------------------------------------------------------------
+-- List Sounds
+------------------------------------------------------------
+
+function AssetManager:ListSounds()
+
+    local Result = {}
+
+    for Name, Id in pairs(self.Sounds) do
+
+        table.insert(Result, {
+
+            Name = Name,
+
+            AssetId = Id
+
+        })
+
+    end
+
+    table.sort(Result,function(a,b)
+
+        return a.Name < b.Name
+
+    end)
+
+    return Result
+
+end
+
+------------------------------------------------------------
+-- List All
+------------------------------------------------------------
+
+function AssetManager:List()
+
+    local Result = {}
+
+    for Path, Id in pairs(self.ByPath) do
+
+        table.insert(Result,{
+
+            Path = Path,
+
+            AssetId = Id
+
+        })
+
+    end
+
+    table.sort(Result,function(a,b)
+
+        return a.Path < b.Path
+
+    end)
+
+    return Result
+
+end
+
+------------------------------------------------------------
+-- Search
+------------------------------------------------------------
+
+function AssetManager:Search(Query)
+
+    Query = Query:lower()
+
+    local Result = {}
+
+    for Name, Asset in pairs(self.ByName) do
+
+        if Name:lower():find(Query,1,true) then
+
+            table.insert(Result,{
+
+                Name = Name,
+
+                AssetId = Asset
+
+            })
+
+        end
+
+    end
+
+    table.sort(Result,function(a,b)
+
+        return a.Name < b.Name
+
+    end)
+
+    return Result
+
+end
+
+------------------------------------------------------------
+-- Reload
+------------------------------------------------------------
+
+function AssetManager:Reload()
+
+    print("[AssetManager] Reloading...")
+
+    self:Index()
+
+end
+
+------------------------------------------------------------
 -- Print Statistics
 ------------------------------------------------------------
 
