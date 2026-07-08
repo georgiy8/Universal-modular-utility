@@ -96,13 +96,15 @@ end
 ------------------------------------------------------------
 -- Init
 ------------------------------------------------------------
-function AssetManager:Init()
-    self:CreateFolder()
-    print("[AssetManager] Starting recursive download from assets/...")
-    self:ScanFolder("assets", "assets")
-    print("[AssetManager] All assets verified and downloaded.")
-end
+print(string.format(
 
+    "[AssetManager] Finished. Verified: %d | Downloaded: %d",
+
+    self.Verified,
+
+    self.Downloaded
+
+))
 ------------------------------------------------------------
 -- Get Asset
 ------------------------------------------------------------
