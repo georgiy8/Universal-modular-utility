@@ -4,7 +4,6 @@
 --========================================================--
 
 local AssetManager = {}
-
 AssetManager.Downloaded = 0
 AssetManager.Verified = 0
 ------------------------------------------------------------
@@ -65,24 +64,9 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
     end
     
     local Items = game:GetService("HttpService"):JSONDecode(Response)
+    
+   for _, item in ipairs(Items) do
 
-    ------------------------------------------------------------
--- Recursive Scan
-------------------------------------------------------------
-function AssetManager:ScanFolder(GithubPath, LocalPath)
-    local Url = "https://api.github.com/repos/" .. USER .. "/" .. REPO_NAME .. "/contents/" .. GithubPath .. "?ref=" .. BRANCH
-    
-    local Success, Response = pcall(function()
-        return game:HttpGet(Url)
-    end)
-    
-    if not Success then
-        warn("[AssetManager] Failed to scan:", GithubPath)
-        return
-    end
-    
-    local Items = game:GetService("HttpService"):JSONDecode(Response)
-        for _, item in ipairs(Items) do
     local NewGithubPath = GithubPath .. "/" .. item.name
     local NewLocalPath = LocalPath .. "/" .. item.name
 
@@ -101,28 +85,36 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
         end
 
     elseif item.type == "dir" then
+
         print("[AssetManager] Entering folder:", item.name)
+
         self:ScanFolder(NewGithubPath, NewLocalPath)
 
     end
 
 end
-    
----------------------------------------------------------
+
+------------------------------------------------------------
 -- Init
 ------------------------------------------------------------
 function AssetManager:Init()
+
     self.Downloaded = 0
     self.Verified = 0
-    self:CreateFolder()
-    print("[AssetManager] Starting recursive download from assets/...")
-    self:ScanFolder("assets", "assets")
-print(string.format(
-    "[AssetManager] Finished. Verified: %d | Downloaded: %d",
-    self.Verified,
-    self.Downloaded
-))
 
+    self:CreateFolder()
+
+    print("[AssetManager] Starting recursive download from assets/...")
+
+    self:ScanFolder("assets", "assets")
+
+    print(string.format(
+        "[AssetManager] Finished. Verified: %d | Downloaded: %d",
+        self.Verified,
+        self.Downloaded
+    ))
+
+end
 ------------------------------------------------------------
 -- Get Asset
 ------------------------------------------------------------
@@ -136,4 +128,3 @@ end
 
 ------------------------------------------------------------
 return AssetManager
-            
