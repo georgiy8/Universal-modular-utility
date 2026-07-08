@@ -1,6 +1,6 @@
 --========================================================--
 -- Pilgrammed GUI Library
--- Asset Manager
+-- Asset Manager (Recursive from assets/)
 --========================================================--
 
 local AssetManager = {}
@@ -8,154 +8,94 @@ local AssetManager = {}
 ------------------------------------------------------------
 -- Repository
 ------------------------------------------------------------
-
-local REPO = "https://raw.githubusercontent.com/georgiy8/Pilgrammed-modular-utility/main/assets/"
-
-------------------------------------------------------------
--- Registered Assets
-------------------------------------------------------------
-
-AssetManager.Assets = {
-
-    "phantom.png",
-    "click.wav",
-
-}
+local USER = "georgiy8"
+local REPO_NAME = "Pilgrammed-modular-utility"
+local BRANCH = "main"
 
 ------------------------------------------------------------
--- Create Assets Folder
+-- Create Folder
 ------------------------------------------------------------
-
 function AssetManager:CreateFolder()
-
     if not isfolder("assets") then
-
         makefolder("assets")
-
         print("[AssetManager] Created assets folder.")
-
     end
-
 end
 
 ------------------------------------------------------------
--- Download Asset
+-- Download
 ------------------------------------------------------------
-
-function AssetManager:Download(FileName)
-
-    local Url = REPO .. FileName
-
-    local Path = "assets/" .. FileName
-
-    print("[AssetManager] Downloading:", FileName)
-
+function AssetManager:Download(Url, LocalPath)
+    print("[AssetManager] Downloading:", LocalPath)
     local Success, Data = pcall(function()
-
         return game:HttpGet(Url)
-
     end)
-
     if not Success then
-
-        warn("[AssetManager] Failed to download:", FileName)
-
+        warn("[AssetManager] Download failed:", LocalPath)
         return false
-
     end
-
+    local Dir = LocalPath:match("(.*/)")
+    if Dir then makefolder(Dir) end
     local WriteSuccess = pcall(function()
-
-        writefile(Path, Data)
-
+        writefile(LocalPath, Data)
     end)
-
-    if not WriteSuccess then
-
-        warn("[AssetManager] Failed to save:", FileName)
-
-        return false
-
-    end
-
-    print("[AssetManager] Saved:", FileName)
-
-    return true
-
-end
-
-------------------------------------------------------------
--- Check Asset
-------------------------------------------------------------
-
-function AssetManager:Check(FileName)
-
-    local Path = "assets/" .. FileName
-
-    if isfile(Path) then
-
+    if WriteSuccess then
+        print("[AssetManager] Saved:", LocalPath)
         return true
-
     end
-
-    return self:Download(FileName)
-
+    return false
 end
 
 ------------------------------------------------------------
--- Check All Assets
+-- Recursive Scan
 ------------------------------------------------------------
+function AssetManager:ScanFolder(GithubPath, LocalPath)
+    local Url = "https://api.github.com/repos/" .. USER .. "/" .. REPO_NAME .. "/contents/" .. GithubPath .. "?ref=" .. BRANCH
+    
+    local Success, Response = pcall(function()
+        return game:HttpGet(Url)
+    end)
+    
+    if not Success then
+        warn("[AssetManager] Failed to scan:", GithubPath)
+        return
+    end
+    
+    local Items = game:GetService("HttpService"):JSONDecode(Response)
+    
+    for _, item in ipairs(Items) do
+        local NewGithubPath = GithubPath .. "/" .. item.name
+        local NewLocalPath = LocalPath .. "/" .. item.name
+        
+        if item.type == "file" then
+            self:Download(item.download_url, NewLocalPath)
+        elseif item.type == "dir" then
+            print("[AssetManager] Entering folder:", item.name)
+            self:ScanFolder(NewGithubPath, NewLocalPath)
+        end
+    end
+end
 
-function AssetManager:CheckAll()
-
+------------------------------------------------------------
+-- Init
+------------------------------------------------------------
+function AssetManager:Init()
     self:CreateFolder()
-
-    for _, FileName in ipairs(self.Assets) do
-
-        self:Check(FileName)
-
-    end
-
-end
-
-------------------------------------------------------------
--- Register Asset
-------------------------------------------------------------
-
-function AssetManager:Register(FileName)
-
-    table.insert(self.Assets, FileName)
-
+    print("[AssetManager] Starting recursive download from assets/...")
+    self:ScanFolder("assets", "assets")
+    print("[AssetManager] All assets verified and downloaded.")
 end
 
 ------------------------------------------------------------
 -- Get Asset
 ------------------------------------------------------------
-
-function AssetManager:Get(FileName)
-
-    if self:Check(FileName) then
-
-        return getcustomasset("assets/" .. FileName)
-
+function AssetManager:Get(RelativePath)
+    local LocalPath = "assets/" .. RelativePath
+    if isfile(LocalPath) then
+        return getcustomasset(LocalPath)
     end
-
     return nil
-
 end
 
 ------------------------------------------------------------
--- Initialize
-------------------------------------------------------------
-
-function AssetManager:Init()
-
-    self:CheckAll()
-
-    print("[AssetManager] Ready.")
-
-end
-
-------------------------------------------------------------
-
 return AssetManager
