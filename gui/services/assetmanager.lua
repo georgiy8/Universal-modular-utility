@@ -5,6 +5,9 @@
 
 local AssetManager = {}
 
+AssetManager.Downloaded = 0
+AssetManager.Verified = 0
+
 ------------------------------------------------------------
 -- Repository
 ------------------------------------------------------------
@@ -38,8 +41,14 @@ function AssetManager:Download(Url, LocalPath)
     if Dir then makefolder(Dir) end
     local WriteSuccess = pcall(function()
         writefile(LocalPath, Data)
+            if isfile(LocalPath) then
+    print("[AssetManager] Saved:", LocalPath)
+else
+    warn("[AssetManager] Failed:", LocalPath)
+end
     end)
     if WriteSuccess then
+          self.Downloaded += 1
         print("[AssetManager] Saved:", LocalPath)
         return true
     end
@@ -67,13 +76,21 @@ function AssetManager:ScanFolder(GithubPath, LocalPath)
         local NewGithubPath = GithubPath .. "/" .. item.name
         local NewLocalPath = LocalPath .. "/" .. item.name
         
-        if item.type == "file" then
-            self:Download(item.download_url, NewLocalPath)
-        elseif item.type == "dir" then
-            print("[AssetManager] Entering folder:", item.name)
-            self:ScanFolder(NewGithubPath, NewLocalPath)
-        end
+  if item.type == "file" then
+    if not isfile(NewLocalPath) then
+        self:Download(item.download_url, NewLocalPath)
+
+    else
+                self.Verified += 1
+
+        print("[AssetManager] Verified:", NewLocalPath)
+
     end
+
+elseif item.type == "dir" then
+    print("[AssetManager] Entering folder:", item.name)
+    self:ScanFolder(NewGithubPath, NewLocalPath)
+
 end
 
 ------------------------------------------------------------
