@@ -1,6 +1,6 @@
 --========================================================--
 -- Pilgrammed GUI Library
--- Asset Manager (Recursive)
+-- Asset Manager (Recursive with Counter)
 --========================================================--
 
 local AssetManager = {}
@@ -39,7 +39,6 @@ function AssetManager:Download(Url, LocalPath)
         return false
     end
     
-    -- Создаём папки
     local Dir = LocalPath:match("(.*/)")
     if Dir and not isfolder(Dir) then
         makefolder(Dir)
