@@ -14,7 +14,7 @@ return function(Window)
     
     -- Создаём Sound Widget
     local Music = Section:AddSound({
-        SoundId = getcustomasset("assets/sounds/music.mp3"), -- замени на свой файл
+        SoundId = getcustomasset("assets/Phantom-lancer/Sounds/Plance_lasthit_03_ru.mp3.mpeg"), -- замени на свой файл
         ShowProgress = true,
         Volume = 0.7
     })
