@@ -24,10 +24,11 @@ function Slider.Create(Parent, Settings)
     self.Value = Settings.Default or self.Min
 
     self.Text = Settings.Text or "Slider"
-
     self.Callback = Settings.Callback or function() end
 
-    self.Value = math.clamp(self.Value, self.Min, self.Max)
+    self.Enabled = true
+
+    self.Value = math.clamp(self.Value,self.Min,self.Max)
 
     --------------------------------------------------------
     -- Main
@@ -68,7 +69,7 @@ function Slider.Create(Parent, Settings)
     ValueLabel.BackgroundTransparency = 1
     ValueLabel.AnchorPoint = Vector2.new(1,0)
     ValueLabel.Position = UDim2.new(1,-10,0,6)
-    ValueLabel.Size = UDim2.new(0,50,0,18)
+    ValueLabel.Size = UDim2.new(0,60,0,18)
     ValueLabel.Font = Enum.Font.GothamBold
     ValueLabel.TextSize = 14
     ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -119,10 +120,6 @@ function Slider.Create(Parent, Settings)
     KnobCorner.CornerRadius = UDim.new(1,0)
     KnobCorner.Parent = Knob
 
-    --------------------------------------------------------
-    -- Internal
-    --------------------------------------------------------
-
     self.Instance = Frame
     self.Label = Label
     self.ValueLabel = ValueLabel
@@ -132,9 +129,21 @@ function Slider.Create(Parent, Settings)
 
     local Dragging = false
 
+        --------------------------------------------------------
+    -- Internal
+    --------------------------------------------------------
+
     local function UpdateVisual()
 
-        local Alpha = (self.Value - self.Min) / (self.Max - self.Min)
+        local Range = self.Max - self.Min
+
+        local Alpha = 0
+
+        if Range ~= 0 then
+            Alpha = (self.Value - self.Min) / Range
+        end
+
+        Alpha = math.clamp(Alpha,0,1)
 
         Fill.Size = UDim2.new(Alpha,0,1,0)
 
@@ -148,7 +157,11 @@ function Slider.Create(Parent, Settings)
 
         NewValue = math.clamp(NewValue,self.Min,self.Max)
 
-        NewValue = math.floor(NewValue/self.Increment+0.5)*self.Increment
+        if self.Increment > 0 then
+            NewValue =
+                math.floor(NewValue / self.Increment + 0.5)
+                * self.Increment
+        end
 
         if NewValue == self.Value then
             return
@@ -159,39 +172,46 @@ function Slider.Create(Parent, Settings)
         UpdateVisual()
 
         pcall(function()
+
             self.Callback(self.Value)
+
         end)
 
     end
 
-    self._UpdateVisual = UpdateVisual
-    self._SetValue = SetValue
-
-    UpdateVisual()
-
-        --------------------------------------------------------
-    -- Mouse
-    --------------------------------------------------------
-
     local function UpdateFromMouse(MouseX)
 
-        local Alpha = (MouseX - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X
+        if not self.Enabled then
+            return
+        end
+
+        local Alpha =
+            (MouseX - Bar.AbsolutePosition.X)
+            / Bar.AbsoluteSize.X
 
         Alpha = math.clamp(Alpha,0,1)
 
-        SetValue(self.Min + ((self.Max - self.Min) * Alpha))
+        local Range = self.Max - self.Min
+
+        SetValue(self.Min + Range * Alpha)
 
     end
 
+    UpdateVisual()
+
+    --------------------------------------------------------
+    -- Mouse
+    --------------------------------------------------------
+
     Bar.InputBegan:Connect(function(Input)
 
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-
-            Dragging = true
-
-            UpdateFromMouse(Input.Position.X)
-
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+            return
         end
+
+        Dragging = true
+
+        UpdateFromMouse(Input.Position.X)
 
     end)
 
@@ -219,7 +239,7 @@ function Slider.Create(Parent, Settings)
 
     end)
 
-    --------------------------------------------------------
+        --------------------------------------------------------
     -- API
     --------------------------------------------------------
 
@@ -240,7 +260,9 @@ function Slider.Create(Parent, Settings)
         self.Min = Min
         self.Max = Max
 
-        SetValue(self.Value)
+        self.Value = math.clamp(self.Value, Min, Max)
+
+        UpdateVisual()
 
     end
 
@@ -248,7 +270,9 @@ function Slider.Create(Parent, Settings)
 
         self.Min = Value
 
-        SetValue(self.Value)
+        self.Value = math.clamp(self.Value, self.Min, self.Max)
+
+        UpdateVisual()
 
     end
 
@@ -256,15 +280,19 @@ function Slider.Create(Parent, Settings)
 
         self.Max = Value
 
-        SetValue(self.Value)
+        self.Value = math.clamp(self.Value, self.Min, self.Max)
+
+        UpdateVisual()
 
     end
 
     function self:SetIncrement(Value)
 
-        self.Increment = math.max(Value,1)
+        if Value > 0 then
 
-        SetValue(self.Value)
+            self.Increment = Value
+
+        end
 
     end
 
@@ -276,6 +304,12 @@ function Slider.Create(Parent, Settings)
 
     end
 
+    function self:SetCallback(Callback)
+
+        self.Callback = Callback or function() end
+
+    end
+
     function self:SetVisible(State)
 
         Frame.Visible = State
@@ -284,15 +318,11 @@ function Slider.Create(Parent, Settings)
 
     function self:SetEnabled(State)
 
+        self.Enabled = State
+
         Bar.Active = State
 
         Knob.Visible = State
-
-    end
-
-    function self:SetCallback(Callback)
-
-        self.Callback = Callback or function() end
 
     end
 
