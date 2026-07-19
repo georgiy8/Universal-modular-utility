@@ -1,6 +1,6 @@
-# Pilgrammed Modular Utility
+# Universal Utility
 
-A modular Roblox GUI library built for executor environments.
+A modular Roblox utility framework built for executor environments.
 
 ---
 
@@ -8,15 +8,15 @@ A modular Roblox GUI library built for executor environments.
 
 ```lua
 local Window = GUI:CreateWindow({
-    Title = "Pilgrammed Utility",
+    Title = "Universal Utility",
     Width = 650,
     Height = 420
 })
 ```
 
 | Option | Type | Default |
-|---------|------|----------|
-| Title | string | "Pilgrammed Utility" |
+|--------|------|---------|
+| Title | string | "Universal Utility" |
 | Width | number | 650 |
 | Height | number | 420 |
 
@@ -32,7 +32,7 @@ local Main = Window:CreateTab({
 ```
 
 | Option | Type |
-|---------|------|
+|--------|------|
 | Name | string |
 | Icon | string |
 
@@ -47,7 +47,7 @@ local General = Main:CreateSection({
 ```
 
 | Option | Type |
-|---------|------|
+|--------|------|
 | Name | string |
 
 ---
@@ -62,10 +62,8 @@ General:AddLabel({
 })
 ```
 
-Options
-
-| Name | Type | Default |
-|------|------|----------|
+| Option | Type | Default |
+|--------|------|---------|
 | Text | string | "Label" |
 
 ---
@@ -83,10 +81,8 @@ General:AddButton({
 })
 ```
 
-Options
-
-| Name | Type |
-|------|------|
+| Option | Type |
+|--------|------|
 | Text | string |
 | Callback | function |
 
@@ -106,10 +102,8 @@ General:AddToggle({
 })
 ```
 
-Options
-
-| Name | Type |
-|------|------|
+| Option | Type |
+|--------|------|
 | Text | string |
 | Default | boolean |
 | Callback | function |
@@ -126,21 +120,21 @@ General:AddSlider({
     Min = 0,
     Max = 100,
     Default = 16,
+    Increment = 1,
     Callback = function(Value)
         print(Value)
     end
 })
 ```
 
-Options
-
-| Name | Type |
-|------|------|
-| Text | string |
-| Min | number |
-| Max | number |
-| Default | number |
-| Callback | function |
+| Option | Type | Default |
+|--------|------|---------|
+| Text | string | "Slider" |
+| Min | number | 0 |
+| Max | number | 100 |
+| Default | number | Min |
+| Increment | number | 1 |
+| Callback | function | |
 
 ---
 
@@ -162,10 +156,8 @@ General:AddDropdown({
 })
 ```
 
-Options
-
-| Name | Type |
-|------|------|
+| Option | Type |
+|--------|------|
 | Text | string |
 | Options | table |
 | Callback | function |
@@ -185,10 +177,8 @@ General:AddTextbox({
 })
 ```
 
-Options
-
-| Name | Type |
-|------|------|
+| Option | Type |
+|--------|------|
 | Placeholder | string |
 | Callback | function |
 
@@ -208,10 +198,8 @@ General:AddKeybind({
 })
 ```
 
-Options
-
-| Name | Type |
-|------|------|
+| Option | Type |
+|--------|------|
 | Text | string |
 | Default | Enum.KeyCode |
 | Callback | function |
@@ -234,8 +222,6 @@ No settings required.
 
 Displays an image.
 
-Using getcustomasset:
-
 ```lua
 General:AddImage({
     Image = getcustomasset("assets/logo.png"),
@@ -243,16 +229,78 @@ General:AddImage({
 })
 ```
 
-Options
+### Supports ImageButton mode
 
-| Name | Type | Default |
-|------|------|----------|
+```lua
+General:AddImage({
+    Image = getcustomasset("assets/logo.png"),
+    Button = true,
+
+    OnClick = function()
+        print("Clicked")
+    end
+})
+```
+
+| Option | Type | Default |
+|--------|------|---------|
 | Image | string | "" |
 | Height | number | 160 |
 | ScaleType | Enum.ScaleType | Fit |
 | Transparency | number | 0 |
 | BackgroundTransparency | number | 1 |
 | BackgroundColor | Color3 | White |
+| AspectRatio | number | nil |
+| Button | boolean | false |
+| ClickSound | string / SoundWidget | nil |
+| OnClick | function | nil |
+| OnRightClick | function | nil |
+| OnHover | function | nil |
+| OnLeave | function | nil |
+
+---
+
+# Sound
+
+Sound utility widget.
+
+```lua
+local Click = Widgets.Sound.Create({
+    Path = Assets:GetSound("click.mp3")
+})
+
+Click:Play()
+```
+
+### Options
+
+| Option | Type | Default |
+|--------|------|---------|
+| Path | string | nil |
+| Volume | number | 1 |
+| Speed | number | 1 |
+| Looped | boolean | false |
+| Parent | Instance | SoundService |
+
+### Methods
+
+```lua
+Sound:Play()
+Sound:Stop()
+Sound:Pause()
+Sound:Resume()
+
+Sound:SetVolume(0.5)
+Sound:SetSpeed(1.2)
+
+Sound:FadeIn(0.25)
+Sound:FadeOut(0.25)
+
+Sound:IsPlaying()
+Sound:GetLength()
+
+Sound:Destroy()
+```
 
 ---
 
@@ -270,18 +318,36 @@ local Label = General:AddLabel({
 Label:SetText("Finished")
 ```
 
-Image example:
+Image:
 
 ```lua
 local Image = General:AddImage({
-    Image = getcustomasset("assets/logo.png")
+    Image = Assets:GetImage("logo.png")
 })
 
-Image:SetImage(getcustomasset("assets/banner.png"))
+Image:SetImage(Assets:GetImage("banner.png"))
 
-Image:SetHeight(300)
+Image:SetHeight(280)
 
 Image:SetVisible(false)
+
+Image:SetAspectRatio(16/9)
+```
+
+Button Image:
+
+```lua
+Image:OnClick(function()
+
+end)
+
+Image:OnHover(function()
+
+end)
+
+Image:OnLeave(function()
+
+end)
 ```
 
 ---
@@ -330,40 +396,65 @@ Section:Destroy()
 
 ---
 
-# Assets
+# Asset Manager
 
-Potassium supports custom assets.
+Universal Utility includes an integrated Asset Manager.
 
-Place files inside:
+Assets are downloaded, verified, indexed and available globally.
 
-```
-assets/
-```
-
-Example:
+Folder structure:
 
 ```
 assets/
-├── logo.png
-├── banner.png
-├── click.mp3
-└── open.wav
+    Universal/
+        Images/
+        Sounds/
+
+    YourModule/
+        Images/
+        Sounds/
 ```
 
-Image:
+---
+
+## Images
+
+```lua
+local Logo = Assets:GetImage("logo.png")
+```
 
 ```lua
 General:AddImage({
-    Image = getcustomasset("assets/logo.png")
+    Image = Logo
 })
 ```
 
-Sound:
+---
+
+## Sounds
 
 ```lua
-local Sound = Instance.new("Sound")
-Sound.SoundId = getcustomasset("assets/click.mp3")
-Sound:Play()
+local Click = Assets:GetSound("click.mp3")
+```
+
+```lua
+Widgets.Sound.Play(Click)
+```
+
+---
+
+## Search
+
+```lua
+Assets:Search("phantom")
+```
+
+---
+
+## Reload
+
+```lua
+Assets:Reload()
 ```
 
 ---
@@ -371,11 +462,20 @@ Sound:Play()
 # Project Structure
 
 ```
+loader.lua
+
+config.lua
+
 gui/
+
     core.lua
     init.lua
+    theme.lua
 
     widgets/
+
+        registry.lua
+
         label.lua
         button.lua
         toggle.lua
@@ -385,18 +485,55 @@ gui/
         keybind.lua
         separator.lua
         image.lua
+        sound.lua
 
     services/
+
         drag.lua
         resize.lua
+        animation.lua
+        utility.lua
+        assetmanager.lua
 
 modules/
+
     main.lua
     fishing.lua
     mining.lua
+    floating.lua
+    settings.lua
 
 assets/
-    logo.png
-    banner.png
-    click.mp3
+
+    Universal/
+
+        Images/
+
+        Sounds/
+
+    ModuleName/
+
+        Images/
+
+        Sounds/
 ```
+
+---
+
+# Features
+
+- Modular GUI framework
+- Modular module loader
+- Automatic Asset Manager
+- Image Widget
+- Image Button Widget
+- Sound Widget
+- Custom Asset Support
+- Automatic asset indexing
+- Automatic GitHub synchronization
+- Window dragging
+- Window resizing
+- Fullscreen mode
+- Minimize support
+- Theme support
+- Designed for executor environments
