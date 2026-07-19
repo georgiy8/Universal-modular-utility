@@ -25,7 +25,23 @@ function Image.Create(Parent, Settings)
 
     --------------------------------------------------------
 
-    local ImageObject = Instance.new("ImageLabel")
+    local IsButton = Settings.Button or false
+
+local ImageObject
+
+if IsButton then
+
+    ImageObject = Instance.new("ImageButton")
+
+    ImageObject.AutoButtonColor = false
+
+    ImageObject.Text = ""
+
+else
+
+    ImageObject = Instance.new("ImageLabel")
+
+end
 
     ImageObject.Name = "Image"
 
@@ -40,6 +56,8 @@ function Image.Create(Parent, Settings)
     ImageObject.ScaleType = ScaleType
 
     ImageObject.Image = Settings.Image or ""
+
+    ImageObject.ClipsDescendants = true
 
     if Settings.AspectRatio then
 
@@ -63,6 +81,8 @@ end
 
     self.Instance = ImageObject
 
+    self.IsButton = IsButton
+
     return self
 
 end
@@ -71,9 +91,9 @@ end
 -- Set Image
 ------------------------------------------------------------
 
-function Image:SetImage(Image)
+function Image:SetImage(NewImage)
 
-    self.Instance.Image = Image
+    self.Instance.Image = NewImage
 
 end
 
