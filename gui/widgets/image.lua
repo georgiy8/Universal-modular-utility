@@ -35,8 +35,6 @@ if IsButton then
 
     ImageObject.AutoButtonColor = false
 
-    ImageObject.Text = ""
-
 else
 
     ImageObject = Instance.new("ImageLabel")
