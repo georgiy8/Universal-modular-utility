@@ -648,4 +648,9 @@ function AssetManager:Init()
 end
 
 ------------------------------------------------------------
+-- Global
+------------------------------------------------------------
+
+_G.Assets = AssetManager
+
 return AssetManager
