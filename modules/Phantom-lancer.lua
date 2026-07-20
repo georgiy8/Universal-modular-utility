@@ -151,7 +151,7 @@ return function(Window)
         Height = 220,
         AspectRatio = 16/9,
         Button = true,
-        ClickSound = Assets:GetSound("Plance_lasthit_03_ru.mp3"),
+        ClickSound = Assets:GetSound("Я_сын_тайской.ogg"),
         OnClick = function()
             print("Image Button Click")
         end
