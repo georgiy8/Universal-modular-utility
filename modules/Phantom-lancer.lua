@@ -1,8 +1,7 @@
 return function(Window)
 
     local Assets = _G.Assets
-
-assert(Assets, "AssetManager is not initialized.")
+    local SoundWidget = _G.SoundWidget
 
     local Tab = Window:CreateTab({
         Name = "Widget Test",
@@ -159,7 +158,7 @@ assert(Assets, "AssetManager is not initialized.")
     })
 
     ------------------------------------------------------------
-    -- Sound
+    -- Sound Widget
     ------------------------------------------------------------
 
     local Sounds = Tab:CreateSection({
@@ -170,11 +169,9 @@ assert(Assets, "AssetManager is not initialized.")
         Text = "Play Sound",
         Callback = function()
 
-            local Sound = Widgets.sound.Create({
-                Path = Assets:GetSound("Plance_lasthit_03_ru.mp3")
-            })
-
-            Sound:Play()
+            SoundWidget.Play(
+                Assets:GetSound("Plance_lasthit_03_ru.mp3")
+            )
 
         end
     })
