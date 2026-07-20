@@ -42,7 +42,6 @@ local Resize = Import("gui/services/resize.lua")
 local AssetManager = Import("gui/services/assetmanager.lua")
 
 AssetManager:Init()
-_G.Assets = AssetManager
 
 ------------------------------------------------------------
 -- Widgets
