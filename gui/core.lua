@@ -116,7 +116,7 @@ function Library:CreateWindow(Settings)
     -- Защита (чтобы не падало, даже если забыли сделать Library.new())
     self.Windows = self.Windows or {}
     
-    selfWindow.TitleText = Settings.Title or "Pilgrammed Utility"
+    selfWindow.TitleText = Settings.Title or "Universal Utility"
     selfWindow.Width = Settings.Width or 650
     selfWindow.Height = Settings.Height or 420
     selfWindow.Tabs = {}
