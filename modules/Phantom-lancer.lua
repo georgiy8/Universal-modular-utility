@@ -178,3 +178,83 @@ return function(Window)
 
 end
 
+------------------------------------------------------------
+-- Audio
+------------------------------------------------------------
+
+local Audio = Tab:CreateSection({
+    Name = "Audio"
+})
+
+local s = SoundWidget.Create({
+
+    Path = Assets:GetSound("Plance_lasthit_03_ru.mp3")
+
+})
+
+Audio:AddButton({
+
+    Text = "Play",
+
+    Callback = function()
+
+        s:Play()
+
+    end
+
+})
+
+Audio:AddButton({
+
+    Text = "Pause",
+
+    Callback = function()
+
+        s:Pause()
+
+    end
+
+})
+
+Audio:AddButton({
+
+    Text = "Resume",
+
+    Callback = function()
+
+        s:Resume()
+
+    end
+
+})
+
+Audio:AddButton({
+
+    Text = "Stop",
+
+    Callback = function()
+
+        s:Stop()
+
+    end
+
+})
+
+local SeekSlider = Audio:AddSlider({
+
+    Text = "Seek",
+
+    Min = 0,
+
+    Max = math.max(s:GetLength(), 0.1),
+
+    Increment = 0.05,
+
+    Callback = function(Value)
+
+        s:SetTimePosition(Value)
+
+    end
+
+})
+
