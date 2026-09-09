@@ -62,8 +62,7 @@ function SoundWidget.Play(selfOrPath, Parent)
 
     -- Instance call:
     -- Sound:Play()
-    if type(selfOrPath) == "table"
-        and getmetatable(selfOrPath) == SoundWidget then
+    if type(selfOrPath) == "table" then
 
         local self = selfOrPath
 
@@ -74,21 +73,21 @@ function SoundWidget.Play(selfOrPath, Parent)
         self.Instance:Play()
 
         return self
+
     end
 
     -- Static call:
     -- SoundWidget.Play(Path, Parent)
-    local Path = selfOrPath
 
     local Sound = SoundWidget.Create({
 
-        Path = Path,
+        Path = selfOrPath,
 
         Parent = Parent
 
     })
 
-    Sound:Play()
+    Sound.Instance:Play()
 
     Sound.Instance.Ended:Once(function()
 
@@ -106,51 +105,49 @@ function SoundWidget:Stop()
 
 end
 
+function SoundWidget:Pause()
+
+    self.Instance:Pause()
+
+end
+
+function SoundWidget:Resume()
+
+    self.Instance:Resume()
+
+end
+
 ------------------------------------------------------------
--- Setters
+-- Properties
 ------------------------------------------------------------
 
-function SoundWidget:SetSound(Path)
+function SoundWidget:SetVolume(Volume)
 
-    self.Path = Path
+    self.Volume = Volume
 
-    self.Instance.SoundId = Path
-
-end
-
-function SoundWidget:SetVolume(Value)
-
-    self.Volume = Value
-
-    self.Instance.Volume = Value
+    self.Instance.Volume = Volume
 
 end
 
-function SoundWidget:SetSpeed(Value)
+function SoundWidget:SetSpeed(Speed)
 
-    self.Speed = Value
+    self.Speed = Speed
 
-    self.Instance.PlaybackSpeed = Value
-
-end
-
-function SoundWidget:SetLooped(State)
-
-    self.Looped = State
-
-    self.Instance.Looped = State
+    self.Instance.PlaybackSpeed = Speed
 
 end
 
-function SoundWidget:SetEnabled(State)
+function SoundWidget:SetLooped(Looped)
 
-    self.Enabled = State
+    self.Looped = Looped
+
+    self.Instance.Looped = Looped
 
 end
 
-function SoundWidget:SetParent(Parent)
+function SoundWidget:SetEnabled(Enabled)
 
-    self.Instance.Parent = Parent
+    self.Enabled = Enabled
 
 end
 
@@ -158,61 +155,53 @@ end
 -- Fade
 ------------------------------------------------------------
 
-function SoundWidget:FadeIn(Time)
+function SoundWidget:FadeIn(Duration, TargetVolume)
 
-    Time = Time or 0.25
-
-    local Target = self.Volume
+    Duration = Duration or 0.5
+    TargetVolume = TargetVolume or self.Volume
 
     self.Instance.Volume = 0
 
-    self:Play()
+    self.Instance:Play()
 
-    task.spawn(function()
+    local Start = tick()
 
-        local Start = tick()
+    while tick() - Start < Duration do
 
-        while tick() - Start < Time do
+        local Alpha = (tick() - Start) / Duration
 
-            local Alpha = (tick() - Start) / Time
+        self.Instance.Volume =
+            TargetVolume * math.clamp(Alpha, 0, 1)
 
-            self.Instance.Volume = Target * Alpha
+        task.wait()
 
-            task.wait()
+    end
 
-        end
-
-        self.Instance.Volume = Target
-
-    end)
+    self.Instance.Volume = TargetVolume
 
 end
 
-function SoundWidget:FadeOut(Time)
+function SoundWidget:FadeOut(Duration)
 
-    Time = Time or 0.25
+    Duration = Duration or 0.5
 
     local StartVolume = self.Instance.Volume
+    local Start = tick()
 
-    task.spawn(function()
+    while tick() - Start < Duration do
 
-        local Start = tick()
+        local Alpha = (tick() - Start) / Duration
 
-        while tick() - Start < Time do
+        self.Instance.Volume =
+            StartVolume * (1 - math.clamp(Alpha, 0, 1))
 
-            local Alpha = (tick() - Start) / Time
+        task.wait()
 
-            self.Instance.Volume = StartVolume * (1 - Alpha)
+    end
 
-            task.wait()
+    self.Instance.Volume = 0
 
-        end
-
-        self.Instance.Volume = StartVolume
-
-        self:Stop()
-
-    end)
+    self.Instance:Stop()
 
 end
 
@@ -220,39 +209,21 @@ end
 -- Events
 ------------------------------------------------------------
 
-function SoundWidget:IsPlaying()
-
-    return self.Instance.IsPlaying
-
-end
-
-function SoundWidget:GetTimePosition()
-
-    return self.Instance.TimePosition
-
-end
-
-function SoundWidget:SetTimePosition(Value)
-
-    self.Instance.TimePosition = Value
-
-end
-
-function SoundWidget:GetLength()
-
-    return self.Instance.TimeLength
-
-end
-
-function SoundWidget:Ended(Callback)
+function SoundWidget:OnEnded(Callback)
 
     return self.Instance.Ended:Connect(Callback)
 
 end
 
-function SoundWidget:Loaded(Callback)
+function SoundWidget:OnPlayed(Callback)
 
-    return self.Instance.Loaded:Connect(Callback)
+    return self.Instance.Played:Connect(Callback)
+
+end
+
+function SoundWidget:OnStopped(Callback)
+
+    return self.Instance.Stopped:Connect(Callback)
 
 end
 
@@ -273,30 +244,8 @@ function SoundWidget:Destroy()
 end
 
 ------------------------------------------------------------
--- Static Helpers
+-- From Asset
 ------------------------------------------------------------
-
-function SoundWidget.Play(Path, Parent)
-
-    local Sound = SoundWidget.Create({
-
-        Path = Path,
-
-        Parent = Parent
-
-    })
-
-    Sound:Play()
-
-    Sound.Instance.Ended:Once(function()
-
-        Sound:Destroy()
-
-    end)
-
-    return Sound
-
-end
 
 function SoundWidget.FromAsset(AssetManager, Name, Parent)
 
