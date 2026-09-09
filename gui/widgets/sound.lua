@@ -58,31 +58,51 @@ end
 -- Playback
 ------------------------------------------------------------
 
-function SoundWidget:Play()
+function SoundWidget.Play(selfOrPath, Parent)
 
-    if not self.Enabled then
-        return
+    -- Instance call:
+    -- Sound:Play()
+    if type(selfOrPath) == "table"
+        and getmetatable(selfOrPath) == SoundWidget then
+
+        local self = selfOrPath
+
+        if not self.Enabled then
+            return
+        end
+
+        self.Instance:Play()
+
+        return self
     end
 
-    self.Instance:Play()
+    -- Static call:
+    -- SoundWidget.Play(Path, Parent)
+    local Path = selfOrPath
+
+    local Sound = SoundWidget.Create({
+
+        Path = Path,
+
+        Parent = Parent
+
+    })
+
+    Sound:Play()
+
+    Sound.Instance.Ended:Once(function()
+
+        Sound:Destroy()
+
+    end)
+
+    return Sound
 
 end
 
 function SoundWidget:Stop()
 
     self.Instance:Stop()
-
-end
-
-function SoundWidget:Pause()
-
-    self.Instance:Pause()
-
-end
-
-function SoundWidget:Resume()
-
-    self.Instance:Resume()
 
 end
 
