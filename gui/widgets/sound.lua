@@ -60,24 +60,18 @@ end
 
 function SoundWidget.Play(selfOrPath, Parent)
 
-    -- Instance call:
-    -- Sound:Play()
-    if type(selfOrPath) == "table" then
+    if type(selfOrPath) == "table"
+        and selfOrPath.Instance then
 
-        local self = selfOrPath
-
-        if not self.Enabled then
+        if not selfOrPath.Enabled then
             return
         end
 
-        self.Instance:Play()
+        selfOrPath.Instance:Play()
 
-        return self
+        return selfOrPath
 
     end
-
-    -- Static call:
-    -- SoundWidget.Play(Path, Parent)
 
     local Sound = SoundWidget.Create({
 
@@ -114,6 +108,30 @@ end
 function SoundWidget:Resume()
 
     self.Instance:Resume()
+
+end
+
+function SoundWidget:IsPlaying()
+
+    return self.Instance.IsPlaying
+
+end
+
+function SoundWidget:GetTimePosition()
+
+    return self.Instance.TimePosition
+
+end
+
+function SoundWidget:SetTimePosition(Time)
+
+    self.Instance.TimePosition = Time
+
+end
+
+function SoundWidget:GetLength()
+
+    return self.Instance.TimeLength
 
 end
 
