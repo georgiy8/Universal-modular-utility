@@ -773,19 +773,21 @@ for _, WidgetName in ipairs(WidgetMethods) do
         local Widget = Widgets[WidgetName]
 
         assert(
-
             Widget,
-
             "Widget '"..WidgetName.."' is not registered."
-
         )
 
+        Settings = Settings or {}
+
+        if WidgetName == "Sound" then
+
+            return Widget.Create(Settings)
+
+        end
+
         return Widget.Create(
-
             self.Container,
-
-            Settings or {}
-
+            Settings
         )
 
     end
