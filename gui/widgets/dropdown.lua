@@ -15,7 +15,7 @@ function Dropdown.Create(Parent, Settings)
 
     local Text = Settings.Text or "Dropdown"
 
-    local Values = Settings.Values or {}
+    local Values = Settings.Values or Settings.Options or {}
 
     local Value = Settings.Default or Values[1]
 
