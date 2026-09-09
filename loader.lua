@@ -37,10 +37,6 @@ local Window = GUI:CreateWindow({
 -- Загружаем игровые модули
 local Modules = {
     "main",
-    "fishing",
-    "mining",
-    "floating",
-    "settings",
     "Phantom-lancer"
     
 }
