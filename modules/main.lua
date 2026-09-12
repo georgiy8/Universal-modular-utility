@@ -8,16 +8,16 @@ local Stats = game:GetService("Stats")
 
 local Player = Players.LocalPlayer
 
-return function(Window)
+return function(Window, meta)
 
     --------------------------------------------------------
     -- Tab
     --------------------------------------------------------
 
     local Main = Window:CreateTab({
-
-        Name = "Main"
-
+        Name = "Main",
+        Icon = "🏠",
+        Order = (meta and meta.Order) or 10,
     })
 
     --------------------------------------------------------
