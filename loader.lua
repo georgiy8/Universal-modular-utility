@@ -43,6 +43,7 @@ local BaseModules = {
     { Name = "main", Order = 10 },
     { Name = "Console", Order = 90 },
     { Name = "settings", Order = 100 },
+    { Name = "Phantom-lancer", Order = 20},
 }
 
 ------------------------------------------------------------
