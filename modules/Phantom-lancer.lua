@@ -1,11 +1,12 @@
-return function(Window)
+return function(Window, meta)
 
     local Assets = _G.Assets
     local SoundWidget = _G.SoundWidget
 
     local Tab = Window:CreateTab({
         Name = "Widget Test",
-        Icon = "🧪"
+        Icon = "🧪",
+        Order = (meta and meta.Order) or 50,
     })
 
     ------------------------------------------------------------
