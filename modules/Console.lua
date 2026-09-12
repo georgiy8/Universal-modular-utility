@@ -1,7 +1,7 @@
 -- modules/console.lua
 -- Developer console: LogService output, filter, copy, clear, run Lua
 
-return function(Window)
+return function(Window, meta)
 
     local LogService = game:GetService("LogService")
     local RunService = game:GetService("RunService")
@@ -9,9 +9,9 @@ return function(Window)
 
     local Tab = Window:CreateTab({
         Name = "Console",
-        Icon = "📋"
+        Icon = "📋",
+        Order = (meta and meta.Order) or 90,
     })
-
     ------------------------------------------------------------
     -- Config
     ------------------------------------------------------------
