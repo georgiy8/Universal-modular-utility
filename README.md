@@ -1,6 +1,11 @@
+Ок, только сюда. Копируй в `README.md`:
+
+```markdown
 # Universal Utility
 
-A modular Roblox utility framework built for executor environments.
+Modular Roblox GUI framework for executor environments.
+
+Load via `loader.lua` (GitHub `HttpGet` + `loadstring`).
 
 ---
 
@@ -54,8 +59,6 @@ local General = Main:CreateSection({
 
 # Label
 
-Displays text.
-
 ```lua
 General:AddLabel({
     Text = "Hello World"
@@ -66,11 +69,11 @@ General:AddLabel({
 |--------|------|---------|
 | Text | string | "Label" |
 
+Methods: `SetText`, `GetText`, `SetColor`, `SetVisible`, `Destroy`
+
 ---
 
 # Button
-
-Creates a clickable button.
 
 ```lua
 General:AddButton({
@@ -86,15 +89,15 @@ General:AddButton({
 | Text | string |
 | Callback | function |
 
+Methods: `SetText`, `GetText`, `SetCallback`, `Fire`, `SetColor`, `SetVisible`, `SetEnabled`, `Destroy`
+
 ---
 
 # Toggle
 
-Creates an ON/OFF switch.
-
 ```lua
 General:AddToggle({
-    Text = "God Mode",
+    Text = "Feature",
     Default = false,
     Callback = function(Value)
         print(Value)
@@ -108,11 +111,11 @@ General:AddToggle({
 | Default | boolean |
 | Callback | function |
 
+Methods: `GetValue`, `SetValue`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
+
 ---
 
 # Slider
-
-Numeric slider.
 
 ```lua
 General:AddSlider({
@@ -136,20 +139,39 @@ General:AddSlider({
 | Increment | number | 1 |
 | Callback | function | |
 
+Methods:
+
+```lua
+Slider:GetValue()
+Slider:SetValue(value)
+Slider:SetRange(min, max)
+Slider:SetMin(min)
+Slider:SetMax(max)
+Slider:SetIncrement(step)
+Slider:SetText(text)
+Slider:SetCallback(fn)
+Slider:SetVisible(state)
+Slider:SetEnabled(state)
+Slider:SetFillColor(color)
+Slider:SetBarColor(color)
+Slider:SetKnobColor(color)
+Slider:SetTextColor(color)
+Slider:SetValueColor(color)
+Slider:Destroy()
+```
+
 ---
 
 # Dropdown
 
-Selection list.
+Accepts **Options** or **Values** (same thing).
 
 ```lua
 General:AddDropdown({
     Text = "Weapon",
-    Options = {
-        "Sword",
-        "Bow",
-        "Gun"
-    },
+    Options = { "Sword", "Bow", "Gun" },
+    -- Values = { "Sword", "Bow", "Gun" }, -- also works
+    Default = "Sword",
     Callback = function(Value)
         print(Value)
     end
@@ -160,33 +182,39 @@ General:AddDropdown({
 |--------|------|
 | Text | string |
 | Options | table |
+| Values | table |
+| Default | any |
 | Callback | function |
+
+Methods: `GetValue`, `SetValue`, `SetValues`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
 
 ---
 
 # Textbox
 
-Text input.
-
 ```lua
 General:AddTextbox({
+    Text = "Name",
     Placeholder = "Type here...",
-    Callback = function(Text)
-        print(Text)
+    Default = "",
+    Callback = function(Text, EnterPressed)
+        print(Text, EnterPressed)
     end
 })
 ```
 
 | Option | Type |
 |--------|------|
+| Text | string |
 | Placeholder | string |
+| Default | string |
 | Callback | function |
+
+Methods: `GetValue`, `SetValue`, `Clear`, `SetPlaceholder`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
 
 ---
 
 # Keybind
-
-Keyboard shortcut.
 
 ```lua
 General:AddKeybind({
@@ -204,38 +232,40 @@ General:AddKeybind({
 | Default | Enum.KeyCode |
 | Callback | function |
 
+Methods: `GetKey`, `SetKey`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
+
 ---
 
 # Separator
 
-Horizontal separator.
-
 ```lua
 General:AddSeparator()
+-- or
+General:AddSeparator({ Text = "Section" })
 ```
 
-No settings required.
+Methods: `SetText`, `GetText`, `SetVisible`, `Destroy`
 
 ---
 
 # Image
 
-Displays an image.
-
 ```lua
 General:AddImage({
-    Image = getcustomasset("assets/logo.png"),
-    Height = 220
+    Image = Assets:GetImage("phantom.png"),
+    Height = 220,
+    AspectRatio = 16/9
 })
 ```
 
-### Supports ImageButton mode
+ImageButton mode:
 
 ```lua
 General:AddImage({
-    Image = getcustomasset("assets/logo.png"),
+    Image = Assets:GetImage("phantom.png"),
+    Height = 220,
     Button = true,
-
+    ClickSound = Assets:GetSound("click.mp3"),
     OnClick = function()
         print("Clicked")
     end
@@ -252,101 +282,124 @@ General:AddImage({
 | BackgroundColor | Color3 | White |
 | AspectRatio | number | nil |
 | Button | boolean | false |
-| ClickSound | string / SoundWidget | nil |
+| ClickSound | string | nil |
 | OnClick | function | nil |
 | OnRightClick | function | nil |
 | OnHover | function | nil |
 | OnLeave | function | nil |
 
+Methods: `SetImage`, `GetImage`, `SetHeight`, `SetVisible`, `SetScaleType`, `SetTransparency`, `SetBackgroundTransparency`, `SetBackgroundColor`, `SetCornerRadius`, `SetBorder`, `SetPadding`, `SetAspectRatio`, `IsButton`, `OnClick`, `OnRightClick`, `OnHover`, `OnLeave`, `Destroy`
+
 ---
 
 # Sound
 
-Sound utility widget.
+One `Play` for both instance and static (no recursion).
+
+### Create
 
 ```lua
-local Click = Widgets.Sound.Create({
-    Path = Assets:GetSound("click.mp3")
+local s = SoundWidget.Create({
+    Path = Assets:GetSound("track.mp3"),
+    Volume = 1,
+    Speed = 1,
+    Looped = false,
+    Parent = game:GetService("SoundService")
 })
-
-Click:Play()
 ```
-
-### Options
 
 | Option | Type | Default |
 |--------|------|---------|
-| Path | string | nil |
+| Path / Sound / Asset | string | nil |
 | Volume | number | 1 |
 | Speed | number | 1 |
 | Looped | boolean | false |
 | Parent | Instance | SoundService |
+| Name | string | "WidgetSound" |
 
-### Methods
+### Play (instance + static)
 
 ```lua
-Sound:Play()
-Sound:Stop()
-Sound:Pause()
-Sound:Resume()
+-- keep instance (pause / seek)
+s:Play()
+s:Pause()
+s:Resume()
+s:Stop()
 
-Sound:SetVolume(0.5)
-Sound:SetSpeed(1.2)
-
-Sound:FadeIn(0.25)
-Sound:FadeOut(0.25)
-
-Sound:IsPlaying()
-Sound:GetLength()
-
-Sound:Destroy()
+-- one-shot (create → play → destroy on Ended)
+SoundWidget.Play(Assets:GetSound("track.mp3"))
 ```
 
----
-
-# Widget Methods
-
-Every widget returns an object.
-
-Example:
+### Seek / state
 
 ```lua
-local Label = General:AddLabel({
-    Text = "Loading..."
+s:IsPlaying()
+s:GetTimePosition()
+s:SetTimePosition(seconds)
+s:GetLength()
+```
+
+### Other
+
+```lua
+s:SetVolume(0.5)
+s:SetSpeed(1.2)
+s:SetLooped(true)
+s:SetEnabled(true)
+
+s:FadeIn(0.5)
+s:FadeOut(0.5)
+
+s:OnEnded(function() end)
+s:OnPlayed(function() end)
+s:OnStopped(function() end)
+
+s:Destroy()
+
+SoundWidget.FromAsset(Assets, "track.mp3")
+SoundWidget.Bind(buttonObject, { Click = assetId, Hover = assetId })
+```
+
+Also: `Section:AddSound({ Path = ... })` (Sound is not passed a Parent frame).
+
+### Seek + Slider example
+
+```lua
+local s = SoundWidget.Create({
+    Path = Assets:GetSound("Plance_lasthit_03_ru.mp3")
 })
 
-Label:SetText("Finished")
-```
-
-Image:
-
-```lua
-local Image = General:AddImage({
-    Image = Assets:GetImage("logo.png")
+local dragging = false
+local Seek = Section:AddSlider({
+    Text = "Seek",
+    Min = 0,
+    Max = 1,
+    Default = 0,
+    Increment = 0.05,
+    Callback = function(Value)
+        dragging = true
+        s:SetTimePosition(Value)
+        task.defer(function()
+            dragging = false
+        end)
+    end
 })
 
-Image:SetImage(Assets:GetImage("banner.png"))
-
-Image:SetHeight(280)
-
-Image:SetVisible(false)
-
-Image:SetAspectRatio(16/9)
-```
-
-Button Image:
-
-```lua
-Image:OnClick(function()
-
+task.spawn(function()
+    for _ = 1, 50 do
+        local len = s:GetLength()
+        if len > 0 then
+            Seek:SetRange(0, len)
+            break
+        end
+        task.wait(0.1)
+    end
 end)
 
-Image:OnHover(function()
-
-end)
-
-Image:OnLeave(function()
-
+game:GetService("RunService").Heartbeat:Connect(function()
+    if not dragging and s:IsPlaying() then
+        Seek:SetValue(s:GetTimePosition())
+    end
 end)
 ```
 
@@ -356,20 +409,16 @@ end)
 
 ```lua
 Window:SetTitle("New Title")
-
-Window:SetSize(800,500)
-
+Window:SetSize(800, 500)
 Window:Show()
-
 Window:Hide()
-
+Window:Minimize()
+Window:Maximize()          -- restore from minimize
 Window:ToggleMinimize()
-
 Window:ToggleFullscreen()
-
 Window:Close()
-
-Window:Destroy()
+Window:Destroy()           -- fixed: single cleanup path
+Window:GetTab("Main")
 ```
 
 ---
@@ -378,10 +427,9 @@ Window:Destroy()
 
 ```lua
 Tab:Select()
-
 Tab:Destroy()
-
 Tab:GetSection("General")
+Tab:CreateSection({ Name = "..." })
 ```
 
 ---
@@ -390,71 +438,64 @@ Tab:GetSection("General")
 
 ```lua
 Section:Clear()
-
 Section:Destroy()
+Section:AddLabel / AddButton / AddToggle / AddSlider
+Section:AddDropdown / AddTextbox / AddKeybind / AddSeparator
+Section:AddImage / AddSound
 ```
 
 ---
 
 # Asset Manager
 
-Universal Utility includes an integrated Asset Manager.
-
-Assets are downloaded, verified, indexed and available globally.
-
-Folder structure:
+Global: `_G.Assets` after GUI init.
 
 ```
 assets/
-    Universal/
-        Images/
-        Sounds/
-
-    YourModule/
-        Images/
-        Sounds/
+  Universal/
+    Images/
+    Sounds/
+  YourModule/
+    Images/
+    Sounds/
 ```
 
----
-
-## Images
+Prefer **ASCII filenames** (no Cyrillic / spaces) — `getcustomasset` may fail otherwise.
 
 ```lua
-local Logo = Assets:GetImage("logo.png")
-```
-
-```lua
-General:AddImage({
-    Image = Logo
-})
-```
-
----
-
-## Sounds
-
-```lua
-local Click = Assets:GetSound("click.mp3")
-```
-
-```lua
-Widgets.Sound.Play(Click)
-```
-
----
-
-## Search
-
-```lua
+Assets:GetImage("phantom.png")
+Assets:GetSound("track.mp3")
+Assets:Get("Universal/Images/phantom.png")
+Assets:GetByName("phantom.png")
+Assets:Exists("phantom.png")
 Assets:Search("phantom")
+Assets:List()
+Assets:ListImages()
+Assets:ListSounds()
+Assets:Reload()
+Assets:PrintStatistics()
 ```
 
 ---
 
-## Reload
+# Modules
+
+`loader.lua` loads:
 
 ```lua
-Assets:Reload()
+local Modules = {
+    "main",
+    "Phantom-lancer"
+}
+```
+
+Each module:
+
+```lua
+return function(Window)
+    local Tab = Window:CreateTab({ Name = "MyTab" })
+    -- ...
+end
 ```
 
 ---
@@ -463,77 +504,37 @@ Assets:Reload()
 
 ```
 loader.lua
-
-config.lua
-
+config.lua                 -- stub
 gui/
-
-    core.lua
-    init.lua
-    theme.lua
-
-    widgets/
-
-        registry.lua
-
-        label.lua
-        button.lua
-        toggle.lua
-        slider.lua
-        dropdown.lua
-        textbox.lua
-        keybind.lua
-        separator.lua
-        image.lua
-        sound.lua
-
-    services/
-
-        drag.lua
-        resize.lua
-        animation.lua
-        utility.lua
-        assetmanager.lua
-
+  core.lua
+  init.lua
+  theme.lua                -- stub
+  widgets/
+    registry.lua
+    label.lua button.lua toggle.lua slider.lua
+    dropdown.lua textbox.lua keybind.lua separator.lua
+    image.lua sound.lua
+  services/
+    drag.lua resize.lua assetmanager.lua
+    animation.lua utility.lua   -- stubs
 modules/
-
-    main.lua
-    fishing.lua
-    mining.lua
-    floating.lua
-    settings.lua
-
+  main.lua
+  Phantom-lancer.lua
+  settings.lua             -- stub
+utilities/                 -- stubs
+  movement.lua network.lua player.lua
 assets/
-
-    Universal/
-
-        Images/
-
-        Sounds/
-
-    ModuleName/
-
-        Images/
-
-        Sounds/
+  Universal/Images/
+  Universal/Sounds/
 ```
 
 ---
 
-# Features
+# Notes
 
-- Modular GUI framework
-- Modular module loader
-- Automatic Asset Manager
-- Image Widget
-- Image Button Widget
-- Sound Widget
-- Custom Asset Support
-- Automatic asset indexing
-- Automatic GitHub synchronization
-- Window dragging
-- Window resizing
-- Fullscreen mode
-- Minimize support
-- Theme support
-- Designed for executor environments
+- Entry: `loader.lua` → `gui/init.lua` → `gui/core.lua`
+- `_G.Assets`, `_G.SoundWidget` set at GUI load
+- Dropdown: use `Options` or `Values`
+- Sound: one `Play`; static path uses `Instance:Play()` only (no recursion)
+- Asset names: ASCII recommended
+```
