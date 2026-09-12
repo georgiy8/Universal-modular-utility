@@ -37,6 +37,14 @@ local REPO = "Universal-modular-utility"
 local BRANCH = "main"
 
 ------------------------------------------------------------
+-- Local workspace root
+------------------------------------------------------------
+
+local ROOT = "Universal-assets-by-gk"
+local ASSETS_GITHUB = "Universal-assets-by-gk/Assets"
+local ASSETS_LOCAL  = "Universal-assets-by-gk/Assets"
+
+------------------------------------------------------------
 -- Supported Extensions
 ------------------------------------------------------------
 
@@ -65,13 +73,20 @@ local SOUND_EXTENSIONS = {
 
 function AssetManager:CreateFolder()
 
-    if not isfolder("assets") then
-
-        makefolder("assets")
-
-        print("[AssetManager] Created assets folder.")
-
+    local function ensure(path)
+        if isfolder and not isfolder(path) then
+            makefolder(path)
+            print("[AssetManager] Created:", path)
+        end
     end
+
+    ensure(ROOT)
+    ensure(ROOT .. "/Assets")
+    ensure(ROOT .. "/Assets/Images")
+    ensure(ROOT .. "/Assets/Sounds")
+    ensure(ROOT .. "/Configs")
+    ensure(ROOT .. "/Configs/Profiles")
+    ensure(ROOT .. "/Themes")
 
 end
 
@@ -271,7 +286,7 @@ function AssetManager:RegisterAsset(File)
 
     local Relative = File
         :gsub("\\","/")
-        :gsub("^assets/","")
+        :gsub("^Universal%-assets%-by%-gk/Assets/","")
 
     --------------------------------------------------------
     -- Duplicate Check
@@ -627,8 +642,8 @@ function AssetManager:Init()
     print("[AssetManager] Synchronizing assets...")
 
     self:ScanFolder(
-        "assets",
-        "assets"
+        ASSETS_GITHUB,
+        ASSETS_LOCAL
     )
 
     --------------------------------------------------------
@@ -637,7 +652,7 @@ function AssetManager:Init()
 
     print("[AssetManager] Building asset index...")
 
-    self:IndexFolder("assets")
+    self:IndexFolder(ASSETS_LOCAL)
 
     --------------------------------------------------------
     -- Done
