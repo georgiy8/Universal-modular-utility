@@ -1,4 +1,3 @@
-Ок, только сюда. Копируй в `README.md`:
 
 ```markdown
 # Universal Utility
