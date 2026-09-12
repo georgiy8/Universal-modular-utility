@@ -37,7 +37,8 @@ local Window = GUI:CreateWindow({
 -- Загружаем игровые модули
 local Modules = {
     "main",
-    "Phantom-lancer"
+    "Phantom-lancer",
+    "Console"
     
 }
 
