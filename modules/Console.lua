@@ -45,7 +45,22 @@ return function(Window, meta)
     local host = Instance.new("Frame")
     host.Name = "ConsoleHost"
     host.Parent = Tab.Container
-    host.Size = UDim2.new(1, -4, 0, 420)
+        local function layoutHost()
+        local h = Tab.Container.AbsoluteSize.Y
+        -- отступы padding вкладки
+        h = math.max(h - 20, 180)
+        host.Size = UDim2.new(1, -4, 0, h)
+    end
+
+    layoutHost()
+
+    Tab.Container:GetPropertyChangedSignal("AbsoluteSize"):Connect(layoutHost)
+
+    if Window.MainFrame then
+        Window.MainFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+            task.defer(layoutHost)
+        end)
+    end
     host.BackgroundColor3 = C.Bg
     host.BorderSizePixel = 0
     Instance.new("UICorner", host).CornerRadius = UDim.new(0, 8)
