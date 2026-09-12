@@ -518,7 +518,6 @@ gui/
     animation.lua utility.lua   -- stubs
 modules/
   main.lua
-  Phantom-lancer.lua
   settings.lua             -- stub
 utilities/                 -- stubs
   movement.lua network.lua player.lua
