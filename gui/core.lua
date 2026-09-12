@@ -303,6 +303,7 @@ end)
     local TabsLayout = Instance.new("UIListLayout")
     TabsLayout.Parent = TabsPanel
     TabsLayout.Padding = UDim.new(0,5)
+    TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabsPanel.CanvasSize = UDim2.fromOffset(
             0,
@@ -376,6 +377,8 @@ function Window:CreateTab(Settings)
 
     selfTab.Icon = Settings.Icon or ""
 
+    selfTab.Order = Settings.Order or 50
+
     selfTab.Sections = {}
 
     --------------------------------------------------------
@@ -403,6 +406,8 @@ function Window:CreateTab(Settings)
     Button.Text = selfTab.Icon .. " " .. selfTab.Name
 
     Instance.new("UICorner",Button).CornerRadius = UDim.new(0,4)
+
+    Button.LayoutOrder = selfTab.Order
 
     selfTab.Button = Button
 
