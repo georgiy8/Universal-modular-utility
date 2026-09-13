@@ -173,6 +173,30 @@ General:AddDropdown({
         print(Value)
     end
 })
+
+### Multi-select
+
+```lua
+General:AddDropdown({
+    Text = "Weapons",
+    Options = { "Sword", "Bow", "Gun", "Staff" },
+    MultiSelect = true,
+    Default = { "Sword", "Gun" },   -- table of preselected values
+    Callback = function(Value)
+        -- Value is a table (array) when MultiSelect = true, not a string
+        print("Dropdown:", table.concat(Value, ", "))
+    end
+})
+```
+
+| Option | Type | Default |
+|--------|------|---------|
+| MultiSelect | boolean | false |
+
+- `MultiSelect = false` (default): unchanged behavior — clicking an option closes the list, `Value` is a single item, `Default` is a single value.
+- `MultiSelect = true`: each option gets a checkbox, the list stays open so you can tick several, `Value` is a **table** of selected items, `Default` is a table.
+- If a callback needs to handle both modes: `if type(Value) == "table" then ... else ... end`.
+- `GetValue()` returns a table in multi-select mode (alias: `GetValues()`); `SetValue(table)` replaces the current selection.
 ```
 
 | Option | Type |
