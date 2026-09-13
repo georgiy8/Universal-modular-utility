@@ -29,7 +29,7 @@ end
 
 -- Создаём окно
 local Window = GUI:CreateWindow({
-    Title = "Pilgrammed Utility",
+    Title = " Universal-modular-utility ",
     Width = 500,
     Height = 400
 })
@@ -123,5 +123,5 @@ for _, mod in ipairs(queue) do
     end
 end
 
-print("[Pilgrammed Utility] Loaded successfully.")
+print("[ Universal-modular-utility ] Loaded successfully.")
 
