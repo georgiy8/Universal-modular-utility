@@ -8,11 +8,17 @@ local Stats = game:GetService("Stats")
 
 local Player = Players.LocalPlayer
 
-return function(Window, meta)
+local function trySetClipboard(text)
+    if typeof(setclipboard) == "function" then
+        return pcall(setclipboard, tostring(text))
+    end
+    if typeof(toclipboard) == "function" then
+        return pcall(toclipboard, tostring(text))
+    end
+    return false
+end
 
-    --------------------------------------------------------
-    -- Tab
-    --------------------------------------------------------
+return function(Window, meta)
 
     local Main = Window:CreateTab({
         Name = "Main",
@@ -20,145 +26,103 @@ return function(Window, meta)
         Order = (meta and meta.Order) or 10,
     })
 
-    --------------------------------------------------------
-    -- Information
-    --------------------------------------------------------
+    ------------------------------------------------------------
+    -- Session / Place info
+    ------------------------------------------------------------
 
     local Info = Main:CreateSection({
-
-        Name = "Information"
-
+        Name = "Session"
     })
 
-    local PlayerLabel = Info:AddLabel({
-
-        Text = "👤 Player: " .. Player.Name
-
+    Info:AddLabel({
+        Text = "Player: " .. Player.Name
     })
 
-    local FPSLabel = Info:AddLabel({
-
-        Text = "📊 FPS: Calculating..."
-
+    Info:AddLabel({
+        Text = "Place: " .. tostring(game.Name)
     })
 
-    local PingLabel = Info:AddLabel({
-
-        Text = "📡 Ping: Calculating..."
-
+    -- Textbox = можно выделить и скопировать вручную
+    Info:AddTextbox({
+        Text = "PlaceId",
+        Default = tostring(game.PlaceId),
+        Placeholder = "PlaceId",
+        Callback = function() end
     })
 
-    local TimeLabel = Info:AddLabel({
-
-        Text = "⏰ Time: " .. os.date("%H:%M:%S")
-
+    Info:AddTextbox({
+        Text = "JobId",
+        Default = tostring(game.JobId),
+        Placeholder = "JobId",
+        Callback = function() end
     })
 
-    --------------------------------------------------------
-    -- Walk Speed
-    --------------------------------------------------------
-
-    local Movement = Main:CreateSection({
-
-        Name = "Movement"
-
-    })
-
-    Movement:AddSlider({
-
-        Text = "Walk Speed",
-
-        Min = 16,
-
-        Max = 100,
-
-        Default = 16,
-
-        Increment = 4,
-
-        Callback = function(Value)
-
-            local Character = Player.Character
-
-            if Character then
-
-                local Humanoid = Character:FindFirstChild("Humanoid")
-
-                if Humanoid then
-
-                    Humanoid.WalkSpeed = Value
-                end
-
+    Info:AddButton({
+        Text = "Copy PlaceId",
+        Callback = function()
+            if trySetClipboard(game.PlaceId) then
+                print("[Main] PlaceId copied:", game.PlaceId)
+            else
+                warn("[Main] clipboard unavailable")
             end
-
         end
-
     })
 
-    --------------------------------------------------------
-    -- FPS Counter
-    --------------------------------------------------------
+    Info:AddButton({
+        Text = "Copy JobId",
+        Callback = function()
+            if trySetClipboard(game.JobId) then
+                print("[Main] JobId copied:", game.JobId)
+            else
+                warn("[Main] clipboard unavailable")
+            end
+        end
+    })
+
+    ------------------------------------------------------------
+    -- Performance
+    ------------------------------------------------------------
+
+    local Perf = Main:CreateSection({
+        Name = "Performance"
+    })
+
+    local FPSLabel = Perf:AddLabel({
+        Text = "FPS: ..."
+    })
+
+    local PingLabel = Perf:AddLabel({
+        Text = "Ping: ..."
+    })
+
+    local TimeLabel = Perf:AddLabel({
+        Text = "Time: " .. os.date("%H:%M:%S")
+    })
 
     local LastTime = tick()
-
     local Frames = 0
 
     RunService.Heartbeat:Connect(function()
-
         Frames += 1
-
-        local Current = tick()
-
-        if Current - LastTime >= 1 then
-
-            local FPS = math.floor(
-
-                Frames /
-
-                (Current - LastTime)
-
-            )
-
-            FPSLabel:SetText(
-
-                "📊 FPS: " .. FPS
-
-            )
-
+        local now = tick()
+        if now - LastTime >= 1 then
+            local fps = math.floor(Frames / (now - LastTime))
+            FPSLabel:SetText("FPS: " .. fps)
             Frames = 0
-
-            LastTime = Current
-
+            LastTime = now
         end
-
-        TimeLabel:SetText(
-
-            "⏰ Time: " ..
-
-            os.date("%H:%M:%S")
-
-        )
-
+        TimeLabel:SetText("Time: " .. os.date("%H:%M:%S"))
     end)
 
-    --------------------------------------------------------
-    -- Ping
-    --------------------------------------------------------
-
     task.spawn(function()
-
         while task.wait(2) do
-
-            local Ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValueString()
-
-            PingLabel:SetText(
-
-                "📡 Ping: " .. Ping
-
-            )
-
+            local ok, ping = pcall(function()
+                return Stats.Network.ServerStatsItem["Data Ping"]:GetValueString()
+            end)
+            if ok and ping then
+                PingLabel:SetText("Ping: " .. ping)
+            end
         end
-
     end)
 
 end
