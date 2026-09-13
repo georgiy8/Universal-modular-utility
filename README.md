@@ -418,6 +418,10 @@ Window:Destroy()           -- fixed: single cleanup path
 Window:GetTab("Main")
 ```
 
+```lua
+GUI:Destroy()   -- Library-level: destroys every open window at once
+```
+
 ---
 
 # Tab Methods
