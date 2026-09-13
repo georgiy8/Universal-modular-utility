@@ -776,16 +776,30 @@ for _, WidgetName in ipairs(WidgetMethods) do
 
         Settings = Settings or {}
 
+        local object
+
         if WidgetName == "Sound" then
-
-            return Widget.Create(Settings)
-
+            object = Widget.Create(Settings)
+        else
+            object = Widget.Create(self.Container, Settings)
         end
 
-        return Widget.Create(
-            self.Container,
-            Settings
-        )
+        local CM = _G.ConfigManager
+        if CM and CM.RegisterWidget and object then
+            local tabName = self.Tab and self.Tab.Name or "Tab"
+            CM.RegisterWidget({
+                Kind = WidgetName,
+                Widget = object,
+                Tab = tabName,
+                Section = self.Name,
+                Text = Settings.Text or Settings.Placeholder,
+                Placeholder = Settings.Placeholder,
+                ConfigKey = Settings.ConfigKey or Settings.Flag,
+                Flag = Settings.Flag,
+            })
+        end
+
+        return object
 
     end
 
