@@ -40,7 +40,9 @@ local Player = Players.LocalPlayer
 local Drag = Import("gui/services/drag.lua")
 local Resize = Import("gui/services/resize.lua")
 local AssetManager = Import("gui/services/assetmanager.lua")
+local ConfigManager = Import("gui/services/config-manager.lua")
 
+_G.ConfigManager = ConfigManager
 AssetManager:Init()
 _G.Assets = AssetManager
 
