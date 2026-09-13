@@ -5,7 +5,7 @@ return {
         Modules = {
             { Name = "Movement", Order = 30 },
             { Name = "Misc", Order = 40 },
-            { Name = "Hivemind", Order = 35 },
+            { Name = "Visual", Order = 35 },
         },
     },
 }
