@@ -89,6 +89,7 @@ return function(Window, meta)
             "Banana",
             "Kiwi"
         },
+        MultiSelect = true,
         Callback = function(Value)
             print("Dropdown:", Value)
         end
