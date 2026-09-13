@@ -88,7 +88,7 @@ if place then
     enqueue(place.Modules, placeRepo)
     print("[Loader] Place matched:", game.PlaceId)
 else
-    print("[Loader] No place config for", game.PlaceId, "- base only")
+    print("[Loader] No place Config for", game.PlaceId, "- base only")
 end
 
 table.sort(queue, function(a, b)
@@ -128,7 +128,7 @@ end
 ------------------------------------------------------------
 
 local HttpService = game:GetService("HttpService")
-local ConfigManager = Import("gui/services/config-manager.lua")
+local ConfigManager = Import("gui/services/Config-manager.lua")
 
 if ConfigManager then
     _G.ConfigManager = ConfigManager
