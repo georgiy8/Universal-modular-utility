@@ -131,6 +131,13 @@ function Dropdown.Create(Parent, Settings)
 
     Layout.Padding = UDim.new(0,2)
 
+    local ListPadding = Instance.new("UIPadding")
+    ListPadding.Parent = List
+    ListPadding.PaddingLeft = UDim.new(0, 4)
+    ListPadding.PaddingRight = UDim.new(0, 4)
+    ListPadding.PaddingTop = UDim.new(0, 2)
+    ListPadding.PaddingBottom = UDim.new(0, 4)
+
     --------------------------------------------------------
 
     local function Update()
@@ -161,9 +168,7 @@ function Dropdown.Create(Parent, Settings)
 
             Option.Parent = List
 
-            Option.Size = UDim2.new(1,-8,0,28)
-
-            Option.Position = UDim2.fromOffset(4,0)
+            Option.Size = UDim2.new(1, 0, 0, 28)
 
             Option.BackgroundColor3 = Color3.fromRGB(48,48,48)
 
