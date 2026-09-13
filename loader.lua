@@ -123,45 +123,5 @@ for _, mod in ipairs(queue) do
     end
 end
 
-------------------------------------------------------------
--- Config autoload: Gk_config/Autoload.json
-------------------------------------------------------------
-
-local HttpService = game:GetService("HttpService")
-local ConfigManager = Import("gui/services/Config-manager.lua")
-
-if ConfigManager then
-    _G.ConfigManager = ConfigManager
-
-    local autoloadProfile = "Universal"
-    local shouldLoad = false
-
-    if isfile and isfile("Gk_config/Autoload.json") then
-        local ok, data = pcall(function()
-            return HttpService:JSONDecode(readfile("Gk_config/Autoload.json"))
-        end)
-        if ok and type(data) == "table" then
-            autoloadProfile = data.profile or autoloadProfile
-            if data.enabled then
-                local placeKey = tostring(game.PlaceId)
-                if data.places and data.places[placeKey] ~= nil then
-                    shouldLoad = data.places[placeKey] == true
-                else
-                    shouldLoad = true
-                end
-            end
-        end
-    end
-
-    if ConfigManager.Init then
-        ConfigManager.Init({ Name = autoloadProfile })
-    end
-
-    if shouldLoad and ConfigManager.Load then
-        ConfigManager.Load()
-        print("[Loader] Config autoload:", autoloadProfile, game.PlaceId)
-    end
-end
-
 print("[Pilgrammed Utility] Loaded successfully.")
 
