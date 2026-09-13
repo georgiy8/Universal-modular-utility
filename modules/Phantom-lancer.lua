@@ -91,9 +91,9 @@ return function(Window, meta)
         },
         MultiSelect = true,
         Callback = function(Value)
-            print("Dropdown:", Value)
-        end
-    })
+            print("Dropdown:", table.concat(Value, ", "))
+    end
+})
 
     ------------------------------------------------------------
     -- Textbox
