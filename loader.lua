@@ -50,7 +50,7 @@ local BaseModules = {
 -- Places (optional external repo modules)
 ------------------------------------------------------------
 
-local Places = Import("places.lua") or {}
+local Places = Import("Places.lua") or {}
 
 local function normalize(entry, fallbackOrder)
     if type(entry) == "string" then
