@@ -121,7 +121,7 @@ function Library:CreateWindow(Settings)
     
     --------------------------------------------------------
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "PilgrammedGUI"
+    ScreenGui.Name = "Universal-modular-utility"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.IgnoreGuiInset = true
     ScreenGui.Parent = Player.PlayerGui
