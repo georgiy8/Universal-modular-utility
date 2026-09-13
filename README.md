@@ -1,464 +1,4 @@
 
-```markdown
-# Universal Utility
-
-Modular Roblox GUI framework for executor environments.
-
-Load via `loader.lua` (GitHub `HttpGet` + `loadstring`).
-
----
-
-# Create Window
-
-```lua
-local Window = GUI:CreateWindow({
-    Title = "Universal Utility",
-    Width = 650,
-    Height = 420
-})
-```
-
-| Option | Type | Default |
-|--------|------|---------|
-| Title | string | "Universal Utility" |
-| Width | number | 650 |
-| Height | number | 420 |
-
----
-
-# Create Tab
-
-```lua
-local Main = Window:CreateTab({
-    Name = "Main",
-    Icon = "🏠"
-})
-```
-
-| Option | Type |
-|--------|------|
-| Name | string |
-| Icon | string |
-
----
-
-# Create Section
-
-```lua
-local General = Main:CreateSection({
-    Name = "General"
-})
-```
-
-| Option | Type |
-|--------|------|
-| Name | string |
-
----
-
-# Label
-
-```lua
-General:AddLabel({
-    Text = "Hello World"
-})
-```
-
-| Option | Type | Default |
-|--------|------|---------|
-| Text | string | "Label" |
-
-Methods: `SetText`, `GetText`, `SetColor`, `SetVisible`, `Destroy`
-
----
-
-# Button
-
-```lua
-General:AddButton({
-    Text = "Print",
-    Callback = function()
-        print("Hello")
-    end
-})
-```
-
-| Option | Type |
-|--------|------|
-| Text | string |
-| Callback | function |
-
-Methods: `SetText`, `GetText`, `SetCallback`, `Fire`, `SetColor`, `SetVisible`, `SetEnabled`, `Destroy`
-
----
-
-# Toggle
-
-```lua
-General:AddToggle({
-    Text = "Feature",
-    Default = false,
-    Callback = function(Value)
-        print(Value)
-    end
-})
-```
-
-| Option | Type |
-|--------|------|
-| Text | string |
-| Default | boolean |
-| Callback | function |
-
-Methods: `GetValue`, `SetValue`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
-
----
-
-# Slider
-
-```lua
-General:AddSlider({
-    Text = "WalkSpeed",
-    Min = 0,
-    Max = 100,
-    Default = 16,
-    Increment = 1,
-    Callback = function(Value)
-        print(Value)
-    end
-})
-```
-
-| Option | Type | Default |
-|--------|------|---------|
-| Text | string | "Slider" |
-| Min | number | 0 |
-| Max | number | 100 |
-| Default | number | Min |
-| Increment | number | 1 |
-| Callback | function | |
-
-Methods:
-
-```lua
-Slider:GetValue()
-Slider:SetValue(value)
-Slider:SetRange(min, max)
-Slider:SetMin(min)
-Slider:SetMax(max)
-Slider:SetIncrement(step)
-Slider:SetText(text)
-Slider:SetCallback(fn)
-Slider:SetVisible(state)
-Slider:SetEnabled(state)
-Slider:SetFillColor(color)
-Slider:SetBarColor(color)
-Slider:SetKnobColor(color)
-Slider:SetTextColor(color)
-Slider:SetValueColor(color)
-Slider:Destroy()
-```
-
----
-
-# Dropdown
-
-Accepts **Options** or **Values** (same thing).
-
-```lua
-General:AddDropdown({
-    Text = "Weapon",
-    Options = { "Sword", "Bow", "Gun" },
-    -- Values = { "Sword", "Bow", "Gun" }, -- also works
-    Default = "Sword",
-    Callback = function(Value)
-        print(Value)
-    end
-})
-```
-
-| Option | Type |
-|--------|------|
-| Text | string |
-| Options | table |
-| Values | table |
-| Default | any |
-| Callback | function |
-
-Methods: `GetValue`, `SetValue`, `SetValues`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
-
----
-
-# Textbox
-
-```lua
-General:AddTextbox({
-    Text = "Name",
-    Placeholder = "Type here...",
-    Default = "",
-    Callback = function(Text, EnterPressed)
-        print(Text, EnterPressed)
-    end
-})
-```
-
-| Option | Type |
-|--------|------|
-| Text | string |
-| Placeholder | string |
-| Default | string |
-| Callback | function |
-
-Methods: `GetValue`, `SetValue`, `Clear`, `SetPlaceholder`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
-
----
-
-# Keybind
-
-```lua
-General:AddKeybind({
-    Text = "Fly",
-    Default = Enum.KeyCode.F,
-    Callback = function()
-        print("Pressed")
-    end
-})
-```
-
-| Option | Type |
-|--------|------|
-| Text | string |
-| Default | Enum.KeyCode |
-| Callback | function |
-
-Methods: `GetKey`, `SetKey`, `SetText`, `SetCallback`, `SetVisible`, `Destroy`
-
----
-
-# Separator
-
-```lua
-General:AddSeparator()
--- or
-General:AddSeparator({ Text = "Section" })
-```
-
-Methods: `SetText`, `GetText`, `SetVisible`, `Destroy`
-
----
-
-# Image
-
-```lua
-General:AddImage({
-    Image = Assets:GetImage("phantom.png"),
-    Height = 220,
-    AspectRatio = 16/9
-})
-```
-
-ImageButton mode:
-
-```lua
-General:AddImage({
-    Image = Assets:GetImage("phantom.png"),
-    Height = 220,
-    Button = true,
-    ClickSound = Assets:GetSound("click.mp3"),
-    OnClick = function()
-        print("Clicked")
-    end
-})
-```
-
-| Option | Type | Default |
-|--------|------|---------|
-| Image | string | "" |
-| Height | number | 160 |
-| ScaleType | Enum.ScaleType | Fit |
-| Transparency | number | 0 |
-| BackgroundTransparency | number | 1 |
-| BackgroundColor | Color3 | White |
-| AspectRatio | number | nil |
-| Button | boolean | false |
-| ClickSound | string | nil |
-| OnClick | function | nil |
-| OnRightClick | function | nil |
-| OnHover | function | nil |
-| OnLeave | function | nil |
-
-Methods: `SetImage`, `GetImage`, `SetHeight`, `SetVisible`, `SetScaleType`, `SetTransparency`, `SetBackgroundTransparency`, `SetBackgroundColor`, `SetCornerRadius`, `SetBorder`, `SetPadding`, `SetAspectRatio`, `IsButton`, `OnClick`, `OnRightClick`, `OnHover`, `OnLeave`, `Destroy`
-
----
-
-# Sound
-
-One `Play` for both instance and static (no recursion).
-
-### Create
-
-```lua
-local s = SoundWidget.Create({
-    Path = Assets:GetSound("track.mp3"),
-    Volume = 1,
-    Speed = 1,
-    Looped = false,
-    Parent = game:GetService("SoundService")
-})
-```
-
-| Option | Type | Default |
-|--------|------|---------|
-| Path / Sound / Asset | string | nil |
-| Volume | number | 1 |
-| Speed | number | 1 |
-| Looped | boolean | false |
-| Parent | Instance | SoundService |
-| Name | string | "WidgetSound" |
-
-### Play (instance + static)
-
-```lua
--- keep instance (pause / seek)
-s:Play()
-s:Pause()
-s:Resume()
-s:Stop()
-
--- one-shot (create → play → destroy on Ended)
-SoundWidget.Play(Assets:GetSound("track.mp3"))
-```
-
-### Seek / state
-
-```lua
-s:IsPlaying()
-s:GetTimePosition()
-s:SetTimePosition(seconds)
-s:GetLength()
-```
-
-### Other
-
-```lua
-s:SetVolume(0.5)
-s:SetSpeed(1.2)
-s:SetLooped(true)
-s:SetEnabled(true)
-
-s:FadeIn(0.5)
-s:FadeOut(0.5)
-
-s:OnEnded(function() end)
-s:OnPlayed(function() end)
-s:OnStopped(function() end)
-
-s:Destroy()
-
-SoundWidget.FromAsset(Assets, "track.mp3")
-SoundWidget.Bind(buttonObject, { Click = assetId, Hover = assetId })
-```
-
-Also: `Section:AddSound({ Path = ... })` (Sound is not passed a Parent frame).
-
-### Seek + Slider example
-
-```lua
-local s = SoundWidget.Create({
-    Path = Assets:GetSound("Plance_lasthit_03_ru.mp3")
-})
-
-local dragging = false
-local Seek = Section:AddSlider({
-    Text = "Seek",
-    Min = 0,
-    Max = 1,
-    Default = 0,
-    Increment = 0.05,
-    Callback = function(Value)
-        dragging = true
-        s:SetTimePosition(Value)
-        task.defer(function()
-            dragging = false
-        end)
-    end
-})
-
-task.spawn(function()
-    for _ = 1, 50 do
-        local len = s:GetLength()
-        if len > 0 then
-            Seek:SetRange(0, len)
-            break
-        end
-        task.wait(0.1)
-    end
-end)
-
-game:GetService("RunService").Heartbeat:Connect(function()
-    if not dragging and s:IsPlaying() then
-        Seek:SetValue(s:GetTimePosition())
-    end
-end)
-```
-
----
-
-# Window Methods
-
-```lua
-Window:SetTitle("New Title")
-Window:SetSize(800, 500)
-Window:Show()
-Window:Hide()
-Window:Minimize()
-Window:Maximize()          -- restore from minimize
-Window:ToggleMinimize()
-Window:ToggleFullscreen()
-Window:Close()
-Window:Destroy()           -- fixed: single cleanup path
-Window:GetTab("Main")
-```
-
----
-
-# Tab Methods
-
-```lua
-Tab:Select()
-Tab:Destroy()
-Tab:GetSection("General")
-Tab:CreateSection({ Name = "..." })
-```
-
----
-
-# Section Methods
-
-```lua
-Section:Clear()
-Section:Destroy()
-Section:AddLabel / AddButton / AddToggle / AddSlider
-Section:AddDropdown / AddTextbox / AddKeybind / AddSeparator
-Section:AddImage / AddSound
-```
-
----
-
-# Asset Manager
-
-Global: `_G.Assets` after GUI init.
-
-```
-assets/
-  Universal/
-    Images/
-    Sounds/
-  YourModule/
-    Images/
-    Sounds/
-```
-
 Prefer **ASCII filenames** (no Cyrillic / spaces) — `getcustomasset` may fail otherwise.
 
 ```lua
@@ -474,6 +14,103 @@ Assets:ListSounds()
 Assets:Reload()
 Assets:PrintStatistics()
 ```
+
+### Extra info & maintenance
+
+```lua
+Assets:GetInfo("phantom.png")
+-- -> { Name, Path, Extension, AssetId }
+
+Assets:Init()                       -- (re)builds the folder tree + index, called automatically on load
+Assets:CreateFolder()               -- creates Assets/Images, Assets/Sounds, Configs/Profiles, Themes
+Assets:Download(URL, LocalPath)     -- downloads a single file via HttpGet and writes it to disk
+Assets:ScanFolder(GithubPath, LocalPath)  -- recursively mirrors a GitHub folder to disk, skipping files that already exist
+Assets:IndexFolder(Path)            -- recursively (re)indexes an already-downloaded local folder
+Assets:RegisterAsset(File)          -- registers a single local file (by extension) into the asset index
+```
+
+---
+
+# Config Manager
+
+Global: `_G.ConfigManager` after GUI init. Handles widget persistence (save/load profiles) and per-place autoload, stored on disk under `Universal-assets-by-gk/Configs/`.
+
+### Auto-save for widgets
+
+Any `Toggle`, `Slider`, `Dropdown`, `Textbox`, or `Keybind` is **automatically tracked** for saving — no extra code needed. Give it an explicit key if you want a stable name across UI changes:
+
+```lua
+General:AddToggle({
+    Text = "God Mode",
+    Flag = "godmode",       -- or ConfigKey = "godmode"
+    Default = false,
+    Callback = function(v) end
+})
+```
+
+Without `Flag`/`ConfigKey`, the key falls back to `"Tab/Section/Text"`.
+
+### Key/value store
+
+```lua
+ConfigManager.Get(key, default)
+ConfigManager.Set(key, value)
+```
+
+### Widget registry (internal, used by `core.lua` automatically)
+
+```lua
+ConfigManager.RegisterWidget(info)   -- called by core.lua right after a widget is created
+ConfigManager.Unregister(key)
+ConfigManager.ClearRegistry()
+ConfigManager.Capture()              -- pulls current values from all registered widgets into memory
+ConfigManager.Apply()                -- pushes in-memory values back onto all registered widgets
+ConfigManager.ListBound()            -- -> [{ Key, Kind, Value }, ...] currently tracked widgets
+```
+
+### Profiles
+
+```lua
+ConfigManager.ListProfiles()         -- -> { "name1", "name2", ... }
+ConfigManager.Save(name)             -- captures widget state and writes Configs/Profiles/<name>.json
+ConfigManager.Load(name)             -- reads the profile and applies it to all registered widgets
+ConfigManager.Delete(name)
+ConfigManager.GetCurrentName()       -- name of the currently loaded/saved profile
+```
+
+### Autoload (per Roblox place)
+
+```lua
+ConfigManager.GetAutoload(placeId)          -- -> enabled, configName, themeName
+ConfigManager.SetAutoload(enabled, configName, themeName, placeId)
+ConfigManager.TryAutoload()                 -- loads the configured profile for the current PlaceId, if enabled
+ConfigManager.GetAutoloadTable()            -- raw table, keyed by PlaceId
+ConfigManager.GetPaths()                    -- -> { Root, Profiles, Autoload } filesystem paths
+```
+
+The `settings` module (see below) ships a ready-made UI for all of this: profile save/load/delete/refresh, and an autoload toggle per place.
+
+---
+
+# Window Dragging & Resizing
+
+Used internally by `gui/core.lua` to make windows draggable/resizable; exposed if you need to wire up a custom frame.
+
+```lua
+Drag.Enable(DragObject, Target)     -- makes Target follow drag input on DragObject (e.g. a title bar)
+Resize.Enable(Target, Handle)       -- makes Target resize by dragging Handle (e.g. a corner grip)
+```
+
+---
+
+# Built-in Modules
+
+Shipped with the loader (`BaseModules` in `loader.lua`), loaded into every window by default:
+
+- **`main`** — Session tab: player name, place name, `PlaceId`/`JobId` textboxes with one-click clipboard copy (`setclipboard`/`toclipboard`), and a live Performance section (FPS counter, network ping, clock).
+- **`Console`** — Developer console tab: live-streams `LogService` output (info/warning/error color-coded), keeps up to 250 messages, supports filtering by text, autoscroll, and running/executing code from the console input.
+- **`settings`** — Settings tab: full UI over the Config Manager — save/load/delete named profiles, refresh the profile list, and enable/configure per-place autoload.
+- **`Phantom-lancer`** — a demo/test tab exercising every widget type; useful as a copy-paste template for a new module.
 
 ---
 
@@ -500,38 +137,3 @@ end
 ---
 
 # Project Structure
-
-```
-loader.lua
-config.lua                 -- stub
-gui/
-  core.lua
-  init.lua
-  theme.lua                -- stub
-  widgets/
-    registry.lua
-    label.lua button.lua toggle.lua slider.lua
-    dropdown.lua textbox.lua keybind.lua separator.lua
-    image.lua sound.lua
-  services/
-    drag.lua resize.lua assetmanager.lua
-    animation.lua utility.lua   -- stubs
-modules/
-  main.lua
-  settings.lua             -- stub
-utilities/                 -- stubs
-  movement.lua network.lua player.lua
-assets/
-  Universal/Images/
-  Universal/Sounds/
-```
----
-
-# Notes
-
-- Entry: `loader.lua` → `gui/init.lua` → `gui/core.lua`
-- `_G.Assets`, `_G.SoundWidget` set at GUI load
-- Dropdown: use `Options` or `Values`
-- Sound: one `Play`; static path uses `Instance:Play()` only (no recursion)
-- Asset names: ASCII recommended
-```
