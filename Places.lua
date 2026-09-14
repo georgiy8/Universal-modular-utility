@@ -4,6 +4,7 @@ local Voxlblade = {
         { Name = "Movement", Order = 30 },
         { Name = "Visual", Order = 35 },
         { Name = "Misc", Order = 40 },
+        { Name = "Mapmarker-for-autofarm", Order = 15 },
     },
 }
 
