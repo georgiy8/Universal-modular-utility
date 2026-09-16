@@ -143,7 +143,11 @@ function Keybind.Create(Parent, Settings)
 
             if Input.UserInputType == Enum.UserInputType.Keyboard then
 
-                Key = Input.KeyCode
+                if Input.KeyCode == Enum.KeyCode.Backspace or Input.KeyCode == Enum.KeyCode.Escape then
+                    Key = Enum.KeyCode.Unknown
+                else
+                    Key = Input.KeyCode
+                end
 
                 Waiting = false
 
