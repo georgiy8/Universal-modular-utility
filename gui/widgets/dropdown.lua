@@ -23,6 +23,10 @@ function Dropdown.Create(Parent, Settings)
     local Value = nil
     local Selected = {}
  
+    local function IsSeparator(Item)
+        return type(Item) == "table" and Item.Separator == true
+    end
+
     if MultiSelect then
         if type(Settings.Default) == "table" then
             for _, v in ipairs(Settings.Default) do
@@ -30,7 +34,16 @@ function Dropdown.Create(Parent, Settings)
             end
         end
     else
-        Value = Settings.Default or Values[1]
+        if Settings.Default ~= nil then
+            Value = Settings.Default
+        else
+            for _, Item in ipairs(Values) do
+                if not IsSeparator(Item) then
+                    Value = Item
+                    break
+                end
+            end
+        end
     end
  
     local Callback = Settings.Callback or function()
@@ -51,7 +64,7 @@ function Dropdown.Create(Parent, Settings)
  
         for _, Item in ipairs(Values) do
  
-            if Selected[Item] then
+            if not IsSeparator(Item) and Selected[Item] then
  
                 table.insert(List, Item)
  
@@ -222,6 +235,58 @@ function Dropdown.Create(Parent, Settings)
  
         for _,Item in ipairs(Values) do
  
+            if IsSeparator(Item) then
+
+                local Sep = Instance.new("Frame")
+
+                Sep.Parent = List
+
+                Sep.BackgroundTransparency = 1
+
+                Sep.Size = UDim2.new(1, 0, 0, (Item.Text and Item.Text ~= "") and 22 or 9)
+
+                if Item.Text and Item.Text ~= "" then
+
+                    local SepLabel = Instance.new("TextLabel")
+
+                    SepLabel.Parent = Sep
+
+                    SepLabel.BackgroundTransparency = 1
+
+                    SepLabel.Position = UDim2.fromOffset(2, 0)
+
+                    SepLabel.Size = UDim2.new(1, -2, 1, -6)
+
+                    SepLabel.Font = Enum.Font.GothamBold
+
+                    SepLabel.TextColor3 = Color3.fromRGB(150,150,150)
+
+                    SepLabel.TextSize = 12
+
+                    SepLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+                    SepLabel.Text = tostring(Item.Text)
+
+                end
+
+                local Line = Instance.new("Frame")
+
+                Line.Parent = Sep
+
+                Line.AnchorPoint = Vector2.new(0,1)
+
+                Line.Position = UDim2.new(0,0,1,0)
+
+                Line.Size = UDim2.new(1,0,0,1)
+
+                Line.BackgroundColor3 = Color3.fromRGB(80,80,80)
+
+                Line.BorderSizePixel = 0
+
+                -- not selectable, not clickable: no Option button for this row
+
+            else
+ 
             local Option = Instance.new("TextButton")
  
             Option.Parent = List
@@ -330,6 +395,8 @@ function Dropdown.Create(Parent, Settings)
                 end
  
             end)
+
+            end
  
         end
  
