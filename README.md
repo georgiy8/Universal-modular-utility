@@ -188,6 +188,25 @@ General:AddDropdown({
     end
 })
 ```
+### separate
+
+'''lua
+Section:AddDropdown({
+    Text = "Mobs",
+    MultiSelect = true,   -- как и раньше
+    Options = {
+        "Buni",
+        "DireBuni",
+        { Separator = true, Text = "Rare" },
+        "Corrupt Buni",
+        "Legendary Buni",
+    },
+    Callback = function(Value)
+        -- Value всё так же таблица (массив) выбранных пунктов
+        print(table.concat(Value, ", "))
+    end
+})
+'''
 
 | Option | Type | Default |
 |--------|------|---------|
