@@ -180,6 +180,8 @@ function Dropdown.Create(Parent, Settings)
  
     Layout.Padding = UDim.new(0,2)
  
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+ 
     local ListPadding = Instance.new("UIPadding")
     ListPadding.Parent = List
     ListPadding.PaddingLeft = UDim.new(0, 4)
@@ -233,13 +235,19 @@ function Dropdown.Create(Parent, Settings)
  
         end
  
+        local OrderIndex = 0
+
         for _,Item in ipairs(Values) do
+
+            OrderIndex = OrderIndex + 1
  
             if IsSeparator(Item) then
 
                 local Sep = Instance.new("Frame")
 
                 Sep.Parent = List
+
+                Sep.LayoutOrder = OrderIndex
 
                 Sep.BackgroundTransparency = 1
 
@@ -290,6 +298,8 @@ function Dropdown.Create(Parent, Settings)
             local Option = Instance.new("TextButton")
  
             Option.Parent = List
+ 
+            Option.LayoutOrder = OrderIndex
  
             Option.Size = UDim2.new(1, 0, 0, 28)
  
