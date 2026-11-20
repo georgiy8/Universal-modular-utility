@@ -14,8 +14,7 @@ return {
 }
 
 local Pilgrammed = {
-    Repo = "https://raw.githubusercontent.com/ТВОЙ_АККАУНТ/Pilgrammed/main/",
-
+    Repo = "https://raw.githubusercontent.com/georgiy8/Pilgrammed/main/",
     Modules = {
         {  Name = "Weapons", Order = 17 },
     },
