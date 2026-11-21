@@ -12,6 +12,7 @@ local Pilgrammed = {
     Repo = "https://raw.githubusercontent.com/georgiy8/Pilgrammed/main/",
     Modules = {
         { Name = "Weapons", Order = 17 },
+        { Name = "Fishing", Order = 18 },
     },
 }
 
