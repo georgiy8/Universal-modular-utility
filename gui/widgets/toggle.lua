@@ -3,6 +3,11 @@
 -- Toggle Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local Toggle = {}
 
 ------------------------------------------------------------
@@ -35,7 +40,7 @@ function Toggle.Create(Parent, Settings)
 
     Button.Size = UDim2.new(1,0,0,30)
 
-    Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Button.BackgroundColor3 = C("Row", Color3.fromRGB(60,60,60))
 
     Button.BorderSizePixel = 0
 
@@ -63,7 +68,7 @@ function Toggle.Create(Parent, Settings)
 
     Label.Text = Text
 
-    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextColor3 = C("Text", Color3.new(1,1,1))
 
     Label.TextSize = 14
 
@@ -83,7 +88,7 @@ function Toggle.Create(Parent, Settings)
 
     Box.Size = UDim2.fromOffset(18,18)
 
-    Box.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    Box.BackgroundColor3 = C("Field", Color3.fromRGB(35,35,35))
 
     Box.BorderSizePixel = 0
 
@@ -105,7 +110,7 @@ function Toggle.Create(Parent, Settings)
 
     Indicator.Visible = Value
 
-    Indicator.BackgroundColor3 = Color3.fromRGB(0,170,255)
+    Indicator.BackgroundColor3 = C("Accent", Color3.fromRGB(0,170,255))
 
     Instance.new("UICorner",Indicator).CornerRadius = UDim.new(0,3)
 
@@ -127,13 +132,13 @@ function Toggle.Create(Parent, Settings)
 
     Button.MouseEnter:Connect(function()
 
-        Button.BackgroundColor3 = Color3.fromRGB(72,72,72)
+        Button.BackgroundColor3 = C("RowHover", Color3.fromRGB(72,72,72))
 
     end)
 
     Button.MouseLeave:Connect(function()
 
-        Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+        Button.BackgroundColor3 = C("Row", Color3.fromRGB(60,60,60))
 
     end)
 
@@ -192,6 +197,13 @@ function Toggle.Create(Parent, Settings)
     function Object:SetCallback(NewCallback)
 
         Callback = NewCallback
+
+    end
+
+    -- вызывает Callback с текущим значением (ConfigManager использует после загрузки профиля)
+    function Object:Fire()
+
+        pcall(Callback, Value)
 
     end
 
