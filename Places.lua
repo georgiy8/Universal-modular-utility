@@ -14,6 +14,7 @@ local Pilgrammed = {
         { Name = "Weapons", Order = 17 },
         { Name = "Fishing", Order = 18 },
         { Name = "Floating", Order = 19 },
+        { Name = "Shop", Order = 20 },
     },
 }
 
