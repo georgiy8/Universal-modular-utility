@@ -3,6 +3,11 @@
 -- Button Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local Button = {}
 
 Button.__index = Button
@@ -29,7 +34,7 @@ function Button.Create(Parent, Settings)
 
     ButtonObject.Size = UDim2.new(1, -10, 0, 28)
 
-    ButtonObject.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    ButtonObject.BackgroundColor3 = C("Row", Color3.fromRGB(60,60,60))
 
     ButtonObject.BorderSizePixel = 0
 
@@ -39,7 +44,7 @@ function Button.Create(Parent, Settings)
 
     ButtonObject.TextSize = 14
 
-    ButtonObject.TextColor3 = Color3.fromRGB(255,255,255)
+    ButtonObject.TextColor3 = C("Text", Color3.fromRGB(255,255,255))
 
     Instance.new("UICorner", ButtonObject).CornerRadius = UDim.new(0,4)
 
