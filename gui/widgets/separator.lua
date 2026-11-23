@@ -3,6 +3,11 @@
 -- Separator Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local Separator = {}
 
 ------------------------------------------------------------
@@ -45,7 +50,7 @@ function Separator.Create(Parent, Settings)
 
     Left.Size = UDim2.new(0.45,0,0,1)
 
-    Left.BackgroundColor3 = Color3.fromRGB(95,95,95)
+    Left.BackgroundColor3 = C("Line", Color3.fromRGB(95,95,95))
 
     Left.BorderSizePixel = 0
 
@@ -63,7 +68,7 @@ function Separator.Create(Parent, Settings)
 
     Right.Size = UDim2.new(0.45,0,0,1)
 
-    Right.BackgroundColor3 = Color3.fromRGB(95,95,95)
+    Right.BackgroundColor3 = C("Line", Color3.fromRGB(95,95,95))
 
     Right.BorderSizePixel = 0
 
@@ -83,7 +88,7 @@ function Separator.Create(Parent, Settings)
 
     Label.Size = UDim2.new(0,0,1,0)
 
-    Label.BackgroundColor3 = Color3.fromRGB(47,47,47)
+    Label.BackgroundColor3 = C("Section", Color3.fromRGB(47,47,47))
 
     Label.BorderSizePixel = 0
 
@@ -91,7 +96,7 @@ function Separator.Create(Parent, Settings)
 
     Label.Text = Text
 
-    Label.TextColor3 = Color3.fromRGB(190,190,190)
+    Label.TextColor3 = C("TextMuted", Color3.fromRGB(190,190,190))
 
     Label.TextSize = 13
 
