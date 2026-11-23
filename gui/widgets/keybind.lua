@@ -3,6 +3,11 @@
 -- Keybind Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local UserInputService = game:GetService("UserInputService")
 
 local Keybind = {}
@@ -37,7 +42,7 @@ function Keybind.Create(Parent, Settings)
 
     Frame.Size = UDim2.new(1,0,0,30)
 
-    Frame.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Frame.BackgroundColor3 = C("Row", Color3.fromRGB(60,60,60))
 
     Frame.BorderSizePixel = 0
 
@@ -61,7 +66,7 @@ function Keybind.Create(Parent, Settings)
 
     Label.Text = Text
 
-    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextColor3 = C("Text", Color3.new(1,1,1))
 
     Label.TextSize = 14
 
@@ -81,13 +86,13 @@ function Keybind.Create(Parent, Settings)
 
     Button.Size = UDim2.fromOffset(70,22)
 
-    Button.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Button.BackgroundColor3 = C("Field", Color3.fromRGB(40,40,40))
 
     Button.BorderSizePixel = 0
 
     Button.Font = Enum.Font.GothamBold
 
-    Button.TextColor3 = Color3.new(1,1,1)
+    Button.TextColor3 = C("Text", Color3.new(1,1,1))
 
     Button.TextSize = 13
 
