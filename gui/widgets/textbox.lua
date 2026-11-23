@@ -3,6 +3,11 @@
 -- Textbox Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local Textbox = {}
 
 ------------------------------------------------------------
@@ -37,7 +42,7 @@ function Textbox.Create(Parent, Settings)
 
     Frame.Size = UDim2.new(1,0,0,56)
 
-    Frame.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Frame.BackgroundColor3 = C("Row", Color3.fromRGB(60,60,60))
 
     Frame.BorderSizePixel = 0
 
@@ -61,7 +66,7 @@ function Textbox.Create(Parent, Settings)
 
     Label.Text = Text
 
-    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextColor3 = C("Text", Color3.new(1,1,1))
 
     Label.TextSize = 14
 
@@ -79,7 +84,7 @@ function Textbox.Create(Parent, Settings)
 
     Input.Size = UDim2.new(1,-20,0,22)
 
-    Input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Input.BackgroundColor3 = C("Field", Color3.fromRGB(40,40,40))
 
     Input.BorderSizePixel = 0
 
@@ -91,9 +96,9 @@ function Textbox.Create(Parent, Settings)
 
     Input.PlaceholderText = Placeholder
 
-    Input.PlaceholderColor3 = Color3.fromRGB(160,160,160)
+    Input.PlaceholderColor3 = C("TextDim", Color3.fromRGB(160,160,160))
 
-    Input.TextColor3 = Color3.new(1,1,1)
+    Input.TextColor3 = C("Text", Color3.new(1,1,1))
 
     Input.TextSize = 13
 
@@ -168,6 +173,13 @@ function Textbox.Create(Parent, Settings)
     function Object:SetCallback(NewCallback)
 
         Callback = NewCallback
+
+    end
+
+    -- вызывает Callback с текущим значением (ConfigManager использует после загрузки профиля)
+    function Object:Fire()
+
+        pcall(Callback, Value, false)
 
     end
 
