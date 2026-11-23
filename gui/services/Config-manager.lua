@@ -168,6 +168,13 @@ local function writeWidget(entry, value)
             w:SetValue(value)
         end)
     end
+    -- SetValue меняет только вид виджета; чтобы модуль тоже получил значение,
+    -- вызываем Callback. У слайдера SetValue уже вызывает Callback сам.
+    if w.Fire and (entry.Kind == "Toggle" or entry.Kind == "Textbox" or entry.Kind == "Dropdown") then
+        pcall(function()
+            w:Fire()
+        end)
+    end
 end
 
 -- called from core after widget Create
@@ -198,8 +205,14 @@ function ConfigManager.RegisterWidget(info)
     }
 
     -- if data already loaded (autoload before widget existed — rare), apply now
+    -- откладываем до конца текущего модуля, чтобы его колбэки видели свои переменные
     if ConfigManager.Data[key] ~= nil then
-        writeWidget(ConfigManager.Registry[key], ConfigManager.Data[key])
+        local entry = ConfigManager.Registry[key]
+        task.defer(function()
+            if ConfigManager.Registry[key] == entry and ConfigManager.Data[key] ~= nil then
+                writeWidget(entry, ConfigManager.Data[key])
+            end
+        end)
     end
 end
 
