@@ -3,6 +3,11 @@
 -- Dropdown Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local Dropdown = {}
  
 ------------------------------------------------------------
@@ -88,7 +93,7 @@ function Dropdown.Create(Parent, Settings)
  
     Frame.AutomaticSize = Enum.AutomaticSize.Y
  
-    Frame.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Frame.BackgroundColor3 = C("Row", Color3.fromRGB(60,60,60))
  
     Frame.BorderSizePixel = 0
  
@@ -124,7 +129,7 @@ function Dropdown.Create(Parent, Settings)
  
     Label.Font = Enum.Font.Gotham
  
-    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextColor3 = C("Text", Color3.new(1,1,1))
  
     Label.TextSize = 14
  
@@ -148,7 +153,7 @@ function Dropdown.Create(Parent, Settings)
  
     Current.Font = Enum.Font.GothamBold
  
-    Current.TextColor3 = Color3.new(1,1,1)
+    Current.TextColor3 = C("Text", Color3.new(1,1,1))
  
     Current.TextSize = 14
  
@@ -267,7 +272,7 @@ function Dropdown.Create(Parent, Settings)
 
                     SepLabel.Font = Enum.Font.GothamBold
 
-                    SepLabel.TextColor3 = Color3.fromRGB(150,150,150)
+                    SepLabel.TextColor3 = C("TextDim", Color3.fromRGB(150,150,150))
 
                     SepLabel.TextSize = 12
 
@@ -287,7 +292,7 @@ function Dropdown.Create(Parent, Settings)
 
                 Line.Size = UDim2.new(1,0,0,1)
 
-                Line.BackgroundColor3 = Color3.fromRGB(80,80,80)
+                Line.BackgroundColor3 = C("Line", Color3.fromRGB(80,80,80))
 
                 Line.BorderSizePixel = 0
 
@@ -303,7 +308,7 @@ function Dropdown.Create(Parent, Settings)
  
             Option.Size = UDim2.new(1, 0, 0, 28)
  
-            Option.BackgroundColor3 = Color3.fromRGB(48,48,48)
+            Option.BackgroundColor3 = C("Option", Color3.fromRGB(48,48,48))
  
             Option.BorderSizePixel = 0
  
@@ -311,7 +316,7 @@ function Dropdown.Create(Parent, Settings)
  
             Option.Text = tostring(Item)
  
-            Option.TextColor3 = Color3.new(1,1,1)
+            Option.TextColor3 = C("Text", Color3.new(1,1,1))
  
             Option.TextSize = 13
  
@@ -338,7 +343,7 @@ function Dropdown.Create(Parent, Settings)
  
                 Box.Size = UDim2.fromOffset(16,16)
  
-                Box.BackgroundColor3 = Color3.fromRGB(35,35,35)
+                Box.BackgroundColor3 = C("Field", Color3.fromRGB(35,35,35))
  
                 Box.BorderSizePixel = 0
  
@@ -356,7 +361,7 @@ function Dropdown.Create(Parent, Settings)
  
                 Indicator.BorderSizePixel = 0
  
-                Indicator.BackgroundColor3 = Color3.fromRGB(0,170,255)
+                Indicator.BackgroundColor3 = C("Accent", Color3.fromRGB(0,170,255))
  
                 Indicator.Visible = Selected[Item] == true
  
@@ -523,6 +528,15 @@ function Dropdown.Create(Parent, Settings)
  
     end
  
+    -- вызывает Callback с текущим значением (ConfigManager использует после загрузки профиля)
+    function Object:Fire()
+        if MultiSelect then
+            pcall(Callback, GetSelectedList())
+        elseif Value ~= nil then
+            pcall(Callback, Value)
+        end
+    end
+
     function Object:SetCallback(NewCallback)
  
         Callback = NewCallback
