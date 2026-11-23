@@ -3,6 +3,11 @@
 -- Slider Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local UserInputService = game:GetService("UserInputService")
 
 local Slider = {}
@@ -38,7 +43,7 @@ function Slider.Create(Parent, Settings)
     Frame.Name = "Slider"
     Frame.Parent = Parent
     Frame.Size = UDim2.new(1,-10,0,56)
-    Frame.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    Frame.BackgroundColor3 = C("Row", Color3.fromRGB(50,50,50))
     Frame.BorderSizePixel = 0
 
     local Corner = Instance.new("UICorner")
@@ -57,7 +62,7 @@ function Slider.Create(Parent, Settings)
     Label.Font = Enum.Font.Gotham
     Label.TextSize = 14
     Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextColor3 = C("Text", Color3.new(1,1,1))
     Label.Text = self.Text
 
     --------------------------------------------------------
@@ -73,7 +78,7 @@ function Slider.Create(Parent, Settings)
     ValueLabel.Font = Enum.Font.GothamBold
     ValueLabel.TextSize = 14
     ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
-    ValueLabel.TextColor3 = Color3.new(1,1,1)
+    ValueLabel.TextColor3 = C("Text", Color3.new(1,1,1))
 
     --------------------------------------------------------
     -- Bar
@@ -84,7 +89,7 @@ function Slider.Create(Parent, Settings)
     Bar.Position = UDim2.new(0,10,0,34)
     Bar.Size = UDim2.new(1,-20,0,8)
     Bar.BorderSizePixel = 0
-    Bar.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    Bar.BackgroundColor3 = C("Field", Color3.fromRGB(35,35,35))
 
     local BarCorner = Instance.new("UICorner")
     BarCorner.CornerRadius = UDim.new(1,0)
@@ -98,7 +103,7 @@ function Slider.Create(Parent, Settings)
     Fill.Parent = Bar
     Fill.Size = UDim2.new(0,0,1,0)
     Fill.BorderSizePixel = 0
-    Fill.BackgroundColor3 = Color3.fromRGB(0,170,255)
+    Fill.BackgroundColor3 = C("Accent", Color3.fromRGB(0,170,255))
 
     local FillCorner = Instance.new("UICorner")
     FillCorner.CornerRadius = UDim.new(1,0)
@@ -114,7 +119,7 @@ function Slider.Create(Parent, Settings)
     Knob.AnchorPoint = Vector2.new(0.5,0.5)
     Knob.Position = UDim2.new(0,0,0.5,0)
     Knob.BorderSizePixel = 0
-    Knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    Knob.BackgroundColor3 = C("Knob", Color3.fromRGB(255,255,255))
 
     local KnobCorner = Instance.new("UICorner")
     KnobCorner.CornerRadius = UDim.new(1,0)
