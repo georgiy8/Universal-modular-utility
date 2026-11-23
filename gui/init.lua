@@ -21,7 +21,7 @@ end
 -- Core библиотеки
 local Core = Import("gui/core.lua")
 
--- Тема (пока не используется, но сразу подключаем)
-Core.Theme = Import("gui/theme.lua")
+-- Тема уже загружена ядром (_G.UMUTheme); грузим заново, только если её нет
+Core.Theme = _G.UMUTheme or Import("gui/theme.lua")
 
 return Core
