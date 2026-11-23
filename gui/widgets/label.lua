@@ -3,6 +3,11 @@
 -- Label Widget
 --========================================================--
 
+local function C(Name, Fallback)
+    local T = _G.UMUTheme
+    return (T and T.Colors[Name]) or Fallback
+end
+
 local Label = {}
 
 Label.__index = Label
@@ -35,7 +40,7 @@ function Label.Create(Parent, Settings)
 
     LabelObject.TextSize = 14
 
-    LabelObject.TextColor3 = Color3.fromRGB(255,255,255)
+    LabelObject.TextColor3 = C("Text", Color3.fromRGB(255,255,255))
 
     LabelObject.TextXAlignment = Enum.TextXAlignment.Left
 
