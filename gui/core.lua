@@ -37,6 +37,29 @@ local Player = Players.LocalPlayer
 -- Library Services
 ------------------------------------------------------------
 
+local ThemeOk, Theme = pcall(Import, "gui/theme.lua")
+
+if not ThemeOk or type(Theme) ~= "table" then
+    Theme = { Colors = {}, Radius = 6, RadiusSmall = 4 }
+end
+
+local function CC(Name, Fallback)
+    return Theme.Colors[Name] or Fallback
+end
+
+local Radius = UDim.new(0, Theme.Radius or 6)
+local RadiusSmall = UDim.new(0, Theme.RadiusSmall or 4)
+
+local TweenService = game:GetService("TweenService")
+
+local function Fade(Object, Color)
+    TweenService:Create(
+        Object,
+        TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { BackgroundColor3 = Color }
+    ):Play()
+end
+
 local Drag = Import("gui/services/drag.lua")
 local Resize = Import("gui/services/resize.lua")
 local AssetManager = Import("gui/services/assetmanager.lua")
@@ -140,9 +163,14 @@ function Library:CreateWindow(Settings)
         .5,
         -selfWindow.Height/2
     )
-    Main.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    Main.BackgroundColor3 = CC("Window", Color3.fromRGB(35,35,35))
     Main.BorderSizePixel = 0
-    Instance.new("UICorner",Main).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner",Main).CornerRadius = Radius
+    local MainStroke = Instance.new("UIStroke")
+    MainStroke.Parent = Main
+    MainStroke.Color = CC("Stroke", Color3.fromRGB(58,63,75))
+    MainStroke.Thickness = 1
+    MainStroke.Transparency = 0.25
     selfWindow.MainFrame = Main
     --------------------------------------------------------
     -- Title Bar
@@ -155,9 +183,9 @@ function Library:CreateWindow(Settings)
         0,
         38
     )
-    TitleBar.BackgroundColor3 = Color3.fromRGB(48,48,48)
+    TitleBar.BackgroundColor3 = CC("TitleBar", Color3.fromRGB(48,48,48))
     TitleBar.BorderSizePixel = 0
-    Instance.new("UICorner",TitleBar).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner",TitleBar).CornerRadius = Radius
     selfWindow.TitleBar = TitleBar
     
  --------------------------------------------------------
@@ -196,7 +224,7 @@ local function CreateControl(Text)
 
     Button.Size = UDim2.fromOffset(24,24)
 
-    Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Button.BackgroundColor3 = CC("Control", Color3.fromRGB(52,56,66))
 
     Button.BorderSizePixel = 0
 
@@ -204,25 +232,25 @@ local function CreateControl(Text)
 
     Button.Text = Text
 
-    Button.TextColor3 = Color3.new(1,1,1)
+    Button.TextColor3 = CC("Text", Color3.new(1,1,1))
 
     Button.TextSize = 14
 
     Button.AutoButtonColor = false
 
-    Instance.new("UICorner",Button).CornerRadius = UDim.new(0,4)
+    Instance.new("UICorner",Button).CornerRadius = RadiusSmall
 
     Button.Parent = Controls
 
     Button.MouseEnter:Connect(function()
 
-        Button.BackgroundColor3 = Color3.fromRGB(82,82,82)
+        Fade(Button, (Text == "X") and CC("Danger", Color3.fromRGB(220,85,85)) or CC("ControlHover", Color3.fromRGB(72,77,90)))
 
     end)
 
     Button.MouseLeave:Connect(function()
 
-        Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+        Fade(Button, CC("Control", Color3.fromRGB(52,56,66)))
 
     end)
 
@@ -279,7 +307,7 @@ end)
     )
     Title.Text = selfWindow.TitleText
     Title.Font = Enum.Font.GothamBold
-    Title.TextColor3 = Color3.new(1,1,1)
+    Title.TextColor3 = CC("Text", Color3.new(1,1,1))
     Title.TextSize = 17
     Title.TextXAlignment = Enum.TextXAlignment.Left
     selfWindow.TitleLabel = Title
@@ -295,11 +323,11 @@ end)
         1,
         -58
     )
-    TabsPanel.BackgroundColor3 = Color3.fromRGB(45,45,45)
+    TabsPanel.BackgroundColor3 = CC("TabsPanel", Color3.fromRGB(45,45,45))
     TabsPanel.BorderSizePixel = 0
     TabsPanel.ScrollBarThickness = 4
     TabsPanel.CanvasSize = UDim2.new()
-    Instance.new("UICorner",TabsPanel).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner",TabsPanel).CornerRadius = Radius
     selfWindow.TabPanel = TabsPanel
     --------------------------------------------------------
     local TabsLayout = Instance.new("UIListLayout")
@@ -324,9 +352,9 @@ end)
         1,
         -58
     )
-    Content.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Content.BackgroundColor3 = CC("Content", Color3.fromRGB(40,40,40))
     Content.BorderSizePixel = 0
-    Instance.new("UICorner",Content).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner",Content).CornerRadius = Radius
     selfWindow.Content = Content
     --------------------------------------------------------
     -- Resize
@@ -341,9 +369,9 @@ end)
         -3
     )
     Handle.Size = UDim2.fromOffset(14,14)
-    Handle.BackgroundColor3 = Color3.fromRGB(90,90,90)
+    Handle.BackgroundColor3 = CC("Line", Color3.fromRGB(90,90,90))
     Handle.BorderSizePixel = 0
-    Instance.new("UICorner",Handle).CornerRadius = UDim.new(0,3)
+    Instance.new("UICorner",Handle).CornerRadius = RadiusSmall
     selfWindow.ResizeHandle = Handle
     --------------------------------------------------------
     Drag.Enable(
@@ -395,19 +423,71 @@ function Window:CreateTab(Settings)
 
     Button.Size = UDim2.new(1,-12,0,32)
 
-    Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Button.BackgroundColor3 = CC("Row", Color3.fromRGB(60,60,60))
 
     Button.BorderSizePixel = 0
 
     Button.Font = Enum.Font.Gotham
 
-    Button.TextColor3 = Color3.new(1,1,1)
+    Button.TextColor3 = CC("Text", Color3.new(1,1,1))
 
     Button.TextSize = 14
 
     Button.Text = selfTab.Icon .. " " .. selfTab.Name
 
-    Instance.new("UICorner",Button).CornerRadius = UDim.new(0,4)
+    Button.AutoButtonColor = false
+
+    Button.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ButtonPadding = Instance.new("UIPadding")
+
+    ButtonPadding.Parent = Button
+
+    ButtonPadding.PaddingLeft = UDim.new(0,14)
+
+    local Bar = Instance.new("Frame")
+
+    Bar.Name = "AccentBar"
+
+    Bar.Parent = Button
+
+    Bar.AnchorPoint = Vector2.new(0,0.5)
+
+    Bar.Position = UDim2.new(0,4,0.5,0)
+
+    Bar.Size = UDim2.fromOffset(3,18)
+
+    Bar.BackgroundColor3 = CC("Accent", Color3.fromRGB(70,160,255))
+
+    Bar.BorderSizePixel = 0
+
+    Bar.Visible = false
+
+    Instance.new("UICorner",Bar).CornerRadius = UDim.new(1,0)
+
+    selfTab.AccentBar = Bar
+
+    Button.MouseEnter:Connect(function()
+
+        if selfTab.Window.ActiveTab ~= selfTab then
+
+            Fade(Button, CC("RowHover", Color3.fromRGB(56,61,72)))
+
+        end
+
+    end)
+
+    Button.MouseLeave:Connect(function()
+
+        if selfTab.Window.ActiveTab ~= selfTab then
+
+            Fade(Button, CC("Row", Color3.fromRGB(45,49,58)))
+
+        end
+
+    end)
+
+    Instance.new("UICorner",Button).CornerRadius = RadiusSmall
 
     Button.LayoutOrder = selfTab.Order
 
@@ -513,13 +593,25 @@ function Tab:Select()
 
         CurrentTab.Container.Visible = false
 
-        CurrentTab.Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+        CurrentTab.Button.BackgroundColor3 = CC("Row", Color3.fromRGB(45,49,58))
+
+        if CurrentTab.AccentBar then
+
+            CurrentTab.AccentBar.Visible = false
+
+        end
 
     end
 
     self.Container.Visible = true
 
-    self.Button.BackgroundColor3 = Color3.fromRGB(82,82,82)
+    self.Button.BackgroundColor3 = CC("RowHover", Color3.fromRGB(56,61,72))
+
+    if self.AccentBar then
+
+        self.AccentBar.Visible = true
+
+    end
 
     Window.ActiveTab = self
 
@@ -587,7 +679,7 @@ function Tab:CreateSection(Settings)
 
     Frame.Parent = self.Container
 
-    Frame.BackgroundColor3 = Color3.fromRGB(47,47,47)
+    Frame.BackgroundColor3 = CC("Section", Color3.fromRGB(47,47,47))
 
     Frame.BorderSizePixel = 0
 
@@ -595,7 +687,7 @@ function Tab:CreateSection(Settings)
 
     Frame.Size = UDim2.new(1,0,0,0)
 
-    Instance.new("UICorner",Frame).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner",Frame).CornerRadius = Radius
 
     selfSection.Frame = Frame
 
@@ -631,13 +723,27 @@ function Tab:CreateSection(Settings)
 
     Title.Text = selfSection.Name
 
-    Title.TextColor3 = Color3.new(1,1,1)
+    Title.TextColor3 = CC("Text", Color3.new(1,1,1))
 
     Title.TextSize = 15
 
     Title.TextXAlignment = Enum.TextXAlignment.Left
 
     selfSection.Title = Title
+
+    local TitleLine = Instance.new("Frame")
+
+    TitleLine.Parent = Frame
+
+    TitleLine.Position = UDim2.fromOffset(0,24)
+
+    TitleLine.Size = UDim2.new(1,0,0,1)
+
+    TitleLine.BackgroundColor3 = CC("Line", Color3.fromRGB(70,76,89))
+
+    TitleLine.BackgroundTransparency = 0.5
+
+    TitleLine.BorderSizePixel = 0
 
     --------------------------------------------------------
     -- Container
@@ -649,7 +755,7 @@ function Tab:CreateSection(Settings)
 
     Container.Parent = Frame
 
-    Container.Position = UDim2.fromOffset(0,28)
+    Container.Position = UDim2.fromOffset(0,32)
 
     Container.Size = UDim2.new(1,0,0,0)
 
