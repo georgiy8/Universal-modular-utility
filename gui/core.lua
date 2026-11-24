@@ -579,7 +579,7 @@ function Window:CreateTab(Settings)
 
     ButtonPadding.Parent = Button
 
-    ButtonPadding.PaddingLeft = UDim.new(0,16)
+    ButtonPadding.PaddingLeft = UDim.new(0,18)
 
     local Bar = Instance.new("Frame")
 
@@ -589,7 +589,7 @@ function Window:CreateTab(Settings)
 
     Bar.AnchorPoint = Vector2.new(0,0.5)
 
-    Bar.Position = UDim2.new(0,4,0.5,0)
+    Bar.Position = UDim2.new(0,-14,0.5,0)
 
     Bar.Size = UDim2.fromOffset(3,18)
 
