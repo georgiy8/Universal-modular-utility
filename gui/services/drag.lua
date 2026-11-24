@@ -33,7 +33,8 @@ function Drag.Enable(DragObject, Target)
 
     DragObject.InputBegan:Connect(function(Input)
 
-        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
             return
         end
 
@@ -57,7 +58,8 @@ function Drag.Enable(DragObject, Target)
             return
         end
 
-        if Input.UserInputType ~= Enum.UserInputType.MouseMovement then
+        if Input.UserInputType ~= Enum.UserInputType.MouseMovement
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
             return
         end
 

@@ -21,7 +21,8 @@ function Resize.Enable(Target, Handle)
 
     Handle.InputBegan:Connect(function(Input)
 
-        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
             return
         end
 
@@ -33,7 +34,8 @@ function Resize.Enable(Target, Handle)
 
     Handle.InputEnded:Connect(function(Input)
 
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if Input.UserInputType == Enum.UserInputType.MouseButton1
+            or Input.UserInputType == Enum.UserInputType.Touch then
             Resizing = false
         end
 
@@ -45,7 +47,8 @@ function Resize.Enable(Target, Handle)
             return
         end
 
-        if Input.UserInputType ~= Enum.UserInputType.MouseMovement then
+        if Input.UserInputType ~= Enum.UserInputType.MouseMovement
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
             return
         end
 
