@@ -60,6 +60,9 @@ local function Fade(Object, Color)
     ):Play()
 end
 
+local HEADER_HEIGHT = 48
+local MAIN_ORDER_LIMIT = 60 -- Order меньше этого значения -> группа "Основное"
+
 local Drag = Import("gui/services/drag.lua")
 local Resize = Import("gui/services/resize.lua")
 local AssetManager = Import("gui/services/assetmanager.lua")
@@ -312,50 +315,163 @@ end)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     selfWindow.TitleLabel = Title
     --------------------------------------------------------
-    -- Tabs Panel
+    -- Sidebar (вкладки + индикатор модулей)
+    --------------------------------------------------------
+    local Sidebar = Instance.new("Frame")
+    Sidebar.Name = "Sidebar"
+    Sidebar.Parent = Main
+    Sidebar.Position = UDim2.fromOffset(8,46)
+    Sidebar.Size = UDim2.new(0,156,1,-54)
+    Sidebar.BackgroundColor3 = CC("TabsPanel", Color3.fromRGB(45,45,45))
+    Sidebar.BorderSizePixel = 0
+    Instance.new("UICorner",Sidebar).CornerRadius = Radius
+    selfWindow.Sidebar = Sidebar
     --------------------------------------------------------
     local TabsPanel = Instance.new("ScrollingFrame")
-    TabsPanel.Parent = Main
-    TabsPanel.Position = UDim2.fromOffset(10,48)
-    TabsPanel.Size = UDim2.new(
-        0,
-        145,
-        1,
-        -58
-    )
-    TabsPanel.BackgroundColor3 = CC("TabsPanel", Color3.fromRGB(45,45,45))
+    TabsPanel.Name = "Tabs"
+    TabsPanel.Parent = Sidebar
+    TabsPanel.Position = UDim2.fromOffset(0,0)
+    TabsPanel.Size = UDim2.new(1,0,1,-40)
+    TabsPanel.BackgroundTransparency = 1
     TabsPanel.BorderSizePixel = 0
-    TabsPanel.ScrollBarThickness = 4
+    TabsPanel.ScrollBarThickness = 3
     TabsPanel.CanvasSize = UDim2.new()
-    Instance.new("UICorner",TabsPanel).CornerRadius = Radius
     selfWindow.TabPanel = TabsPanel
+    --------------------------------------------------------
+    local TabsPadding = Instance.new("UIPadding")
+    TabsPadding.Parent = TabsPanel
+    TabsPadding.PaddingTop = UDim.new(0,8)
+    TabsPadding.PaddingBottom = UDim.new(0,6)
+    TabsPadding.PaddingLeft = UDim.new(0,8)
+    TabsPadding.PaddingRight = UDim.new(0,8)
     --------------------------------------------------------
     local TabsLayout = Instance.new("UIListLayout")
     TabsLayout.Parent = TabsPanel
-    TabsLayout.Padding = UDim.new(0,5)
+    TabsLayout.Padding = UDim.new(0,3)
     TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabsPanel.CanvasSize = UDim2.fromOffset(
             0,
-            TabsLayout.AbsoluteContentSize.Y+8
+            TabsLayout.AbsoluteContentSize.Y+16
         )
     end)
+    --------------------------------------------------------
+    -- Заголовки групп вкладок
+    --------------------------------------------------------
+    local function GroupHeader(Name, Text, Order)
+        local Header = Instance.new("TextLabel")
+        Header.Name = Name
+        Header.Parent = TabsPanel
+        Header.LayoutOrder = Order
+        Header.Size = UDim2.new(1,0,0,20)
+        Header.BackgroundTransparency = 1
+        Header.Font = Enum.Font.GothamBold
+        Header.Text = Text
+        Header.TextSize = 11
+        Header.TextColor3 = CC("TextDim", Color3.fromRGB(150,158,171))
+        Header.TextXAlignment = Enum.TextXAlignment.Left
+        Header.Visible = false
+        local HeaderPadding = Instance.new("UIPadding")
+        HeaderPadding.Parent = Header
+        HeaderPadding.PaddingLeft = UDim.new(0,6)
+        return Header
+    end
+    selfWindow.MainHeader = GroupHeader("MainHeader", "ОСНОВНОЕ", 0)
+    selfWindow.SecondaryHeader = GroupHeader("SecondaryHeader", "ДОПОЛНИТЕЛЬНОЕ", 1000)
+    --------------------------------------------------------
+    -- Индикатор загрузки модулей
+    --------------------------------------------------------
+    local Footer = Instance.new("TextButton")
+    Footer.Name = "ModuleStatus"
+    Footer.Parent = Sidebar
+    Footer.AnchorPoint = Vector2.new(0,1)
+    Footer.Position = UDim2.new(0,0,1,0)
+    Footer.Size = UDim2.new(1,0,0,40)
+    Footer.BackgroundTransparency = 1
+    Footer.AutoButtonColor = false
+    Footer.Text = ""
+    local FooterLine = Instance.new("Frame")
+    FooterLine.Parent = Footer
+    FooterLine.Position = UDim2.fromOffset(10,0)
+    FooterLine.Size = UDim2.new(1,-20,0,1)
+    FooterLine.BackgroundColor3 = CC("Line", Color3.fromRGB(70,76,89))
+    FooterLine.BackgroundTransparency = 0.4
+    FooterLine.BorderSizePixel = 0
+    local Dot = Instance.new("Frame")
+    Dot.Name = "Dot"
+    Dot.Parent = Footer
+    Dot.AnchorPoint = Vector2.new(0,0.5)
+    Dot.Position = UDim2.new(0,16,0.5,1)
+    Dot.Size = UDim2.fromOffset(9,9)
+    Dot.BackgroundColor3 = CC("Warning", Color3.fromRGB(240,180,60))
+    Dot.BorderSizePixel = 0
+    Instance.new("UICorner",Dot).CornerRadius = UDim.new(1,0)
+    local FooterText = Instance.new("TextLabel")
+    FooterText.Name = "Text"
+    FooterText.Parent = Footer
+    FooterText.BackgroundTransparency = 1
+    FooterText.Position = UDim2.fromOffset(32,1)
+    FooterText.Size = UDim2.new(1,-38,1,-1)
+    FooterText.Font = Enum.Font.Gotham
+    FooterText.Text = "Загрузка..."
+    FooterText.TextSize = 12
+    FooterText.TextColor3 = CC("TextMuted", Color3.fromRGB(184,190,201))
+    FooterText.TextXAlignment = Enum.TextXAlignment.Left
+    FooterText.TextTruncate = Enum.TextTruncate.AtEnd
+    selfWindow.StatusDot = Dot
+    selfWindow.StatusText = FooterText
+    selfWindow.StatusButton = Footer
+    selfWindow.ModuleReports = {}
+    selfWindow.ModulesExpected = 0
     --------------------------------------------------------
     -- Content
     --------------------------------------------------------
     local Content = Instance.new("Frame")
+    Content.Name = "Content"
     Content.Parent = Main
-    Content.Position = UDim2.fromOffset(165,48)
+    Content.Position = UDim2.fromOffset(172,46)
     Content.Size = UDim2.new(
         1,
-        -175,
+        -180,
         1,
-        -58
+        -54
     )
     Content.BackgroundColor3 = CC("Content", Color3.fromRGB(40,40,40))
     Content.BorderSizePixel = 0
     Instance.new("UICorner",Content).CornerRadius = Radius
     selfWindow.Content = Content
+    --------------------------------------------------------
+    -- Заголовок страницы
+    --------------------------------------------------------
+    local PageHeader = Instance.new("Frame")
+    PageHeader.Name = "PageHeader"
+    PageHeader.Parent = Content
+    PageHeader.Size = UDim2.new(1,0,0,HEADER_HEIGHT)
+    PageHeader.BackgroundTransparency = 1
+    local PageTitle = Instance.new("TextLabel")
+    PageTitle.Name = "Title"
+    PageTitle.Parent = PageHeader
+    PageTitle.BackgroundTransparency = 1
+    PageTitle.Position = UDim2.fromOffset(16,8)
+    PageTitle.Size = UDim2.new(1,-32,0,22)
+    PageTitle.Font = Enum.Font.GothamBold
+    PageTitle.Text = ""
+    PageTitle.TextSize = 18
+    PageTitle.TextColor3 = CC("Text", Color3.new(1,1,1))
+    PageTitle.TextXAlignment = Enum.TextXAlignment.Left
+    local PageSub = Instance.new("TextLabel")
+    PageSub.Name = "Subtitle"
+    PageSub.Parent = PageHeader
+    PageSub.BackgroundTransparency = 1
+    PageSub.Position = UDim2.fromOffset(16,30)
+    PageSub.Size = UDim2.new(1,-32,0,14)
+    PageSub.Font = Enum.Font.Gotham
+    PageSub.Text = ""
+    PageSub.TextSize = 12
+    PageSub.TextColor3 = CC("TextDim", Color3.fromRGB(150,158,171))
+    PageSub.TextXAlignment = Enum.TextXAlignment.Left
+    selfWindow.PageTitle = PageTitle
+    selfWindow.PageSubtitle = PageSub
     --------------------------------------------------------
     -- Resize
     --------------------------------------------------------
@@ -383,6 +499,8 @@ end)
         Handle
     )
     
+    selfWindow:_BuildStatusPopup()
+
     table.insert(
         self.Windows,
         selfWindow
@@ -409,6 +527,24 @@ function Window:CreateTab(Settings)
 
     selfTab.Order = Settings.Order or 50
 
+    selfTab.Description = Settings.Description
+
+    -- Группа: "Main" (основное) или "Secondary" (дополнительное).
+    -- Не указана - решает Order (модули отдельно менять не нужно).
+    local GroupSetting = Settings.Group
+    if type(GroupSetting) == "string" then
+        GroupSetting = string.lower(GroupSetting)
+    end
+    if GroupSetting == "secondary" or GroupSetting == "extra" or GroupSetting == "second" then
+        selfTab.Group = "Secondary"
+    elseif GroupSetting == "main" or GroupSetting == "primary" then
+        selfTab.Group = "Main"
+    elseif Settings.Secondary == true then
+        selfTab.Group = "Secondary"
+    else
+        selfTab.Group = (selfTab.Order < MAIN_ORDER_LIMIT) and "Main" or "Secondary"
+    end
+
     selfTab.Sections = {}
 
     --------------------------------------------------------
@@ -421,7 +557,7 @@ function Window:CreateTab(Settings)
 
     Button.Parent = self.TabPanel
 
-    Button.Size = UDim2.new(1,-12,0,32)
+    Button.Size = UDim2.new(1,0,0,32)
 
     Button.BackgroundColor3 = CC("Row", Color3.fromRGB(60,60,60))
 
@@ -433,7 +569,7 @@ function Window:CreateTab(Settings)
 
     Button.TextSize = 14
 
-    Button.Text = selfTab.Icon .. " " .. selfTab.Name
+    Button.Text = (selfTab.Icon ~= "" and (selfTab.Icon .. " ") or "") .. selfTab.Name
 
     Button.AutoButtonColor = false
 
@@ -443,7 +579,7 @@ function Window:CreateTab(Settings)
 
     ButtonPadding.Parent = Button
 
-    ButtonPadding.PaddingLeft = UDim.new(0,14)
+    ButtonPadding.PaddingLeft = UDim.new(0,16)
 
     local Bar = Instance.new("Frame")
 
@@ -489,7 +625,9 @@ function Window:CreateTab(Settings)
 
     Instance.new("UICorner",Button).CornerRadius = RadiusSmall
 
-    Button.LayoutOrder = selfTab.Order
+    selfTab.Button = Button
+
+    selfTab:_ApplyGroupOrder()
 
     selfTab.Button = Button
 
@@ -503,7 +641,9 @@ function Window:CreateTab(Settings)
 
     Container.Parent = self.Content
 
-    Container.Size = UDim2.fromScale(1,1)
+    Container.Position = UDim2.fromOffset(0,HEADER_HEIGHT)
+
+    Container.Size = UDim2.new(1,0,1,-HEADER_HEIGHT)
 
     Container.CanvasSize = UDim2.new()
 
@@ -523,13 +663,13 @@ function Window:CreateTab(Settings)
 
     Padding.Parent = Container
 
-    Padding.PaddingTop = UDim.new(0,8)
+    Padding.PaddingTop = UDim.new(0,2)
 
-    Padding.PaddingBottom = UDim.new(0,8)
+    Padding.PaddingBottom = UDim.new(0,10)
 
-    Padding.PaddingLeft = UDim.new(0,8)
+    Padding.PaddingLeft = UDim.new(0,10)
 
-    Padding.PaddingRight = UDim.new(0,8)
+    Padding.PaddingRight = UDim.new(0,10)
 
     --------------------------------------------------------
 
@@ -570,6 +710,8 @@ function Window:CreateTab(Settings)
         selfTab
 
     )
+
+    self:_RefreshGroups()
 
     if #self.Tabs == 1 then
 
@@ -614,6 +756,89 @@ function Tab:Select()
     end
 
     Window.ActiveTab = self
+
+    if Window.PageTitle then
+
+        Window.PageTitle.Text = self.Name
+
+        Window.PageSubtitle.Text = self.Description or ""
+
+    end
+
+end
+
+------------------------------------------------------------
+-- Tab groups (Основное / Дополнительное)
+------------------------------------------------------------
+
+function Tab:_ApplyGroupOrder()
+
+    if self.Button then
+
+        if self.Group == "Secondary" then
+
+            self.Button.LayoutOrder = 1100 + self.Order
+
+        else
+
+            self.Button.LayoutOrder = 100 + self.Order
+
+        end
+
+    end
+
+end
+
+function Window:_RefreshGroups()
+
+    local MainCount, SecondaryCount = 0, 0
+
+    for _, TabObject in ipairs(self.Tabs) do
+
+        if TabObject.Group == "Secondary" then
+
+            SecondaryCount = SecondaryCount + 1
+
+        else
+
+            MainCount = MainCount + 1
+
+        end
+
+    end
+
+    if self.MainHeader then
+
+        -- заголовки нужны, только если есть обе группы
+
+        local Both = MainCount > 0 and SecondaryCount > 0
+
+        self.MainHeader.Visible = Both
+
+        self.SecondaryHeader.Visible = Both
+
+    end
+
+end
+
+-- Window:SetTabGroup("Console", "Secondary")
+function Window:SetTabGroup(Name, Group)
+
+    local TabObject = self:GetTab(Name)
+
+    if not TabObject then
+
+        return false
+
+    end
+
+    TabObject.Group = (string.lower(tostring(Group)) == "secondary") and "Secondary" or "Main"
+
+    TabObject:_ApplyGroupOrder()
+
+    self:_RefreshGroups()
+
+    return true
 
 end
 
@@ -914,6 +1139,196 @@ for _, WidgetName in ipairs(WidgetMethods) do
 end
 
 ------------------------------------------------------------
+-- Индикатор загрузки модулей
+-- Window:BeginModules(total) - сколько модулей ожидается
+-- Window:ReportModule(name, ok, err) - результат загрузки одного модуля
+------------------------------------------------------------
+
+function Window:_RefreshStatus()
+
+    if not self.StatusDot then
+
+        return
+
+    end
+
+    local Done, Failed = 0, 0
+
+    for _, Report in ipairs(self.ModuleReports) do
+
+        if Report.Ok then
+
+            Done = Done + 1
+
+        else
+
+            Failed = Failed + 1
+
+        end
+
+    end
+
+    local Total = math.max(self.ModulesExpected or 0, Done + Failed)
+
+    if Failed > 0 then
+
+        self.StatusDot.BackgroundColor3 = CC("Danger", Color3.fromRGB(220,85,85))
+
+        self.StatusText.Text = "Ошибки: " .. Failed .. " из " .. Total
+
+    elseif (self.ModulesExpected or 0) > Done then
+
+        self.StatusDot.BackgroundColor3 = CC("Warning", Color3.fromRGB(240,180,60))
+
+        self.StatusText.Text = "Загрузка " .. Done .. "/" .. self.ModulesExpected
+
+    else
+
+        self.StatusDot.BackgroundColor3 = CC("Success", Color3.fromRGB(70,194,138))
+
+        self.StatusText.Text = "Все модули загружены (" .. Done .. ")"
+
+    end
+
+    -- список в окошке, если оно открыто
+    if self.StatusPopupText then
+
+        local Lines = {}
+
+        for _, Report in ipairs(self.ModuleReports) do
+
+            local Line = (Report.Ok and "+ " or "x ") .. tostring(Report.Name)
+
+            if not Report.Ok and Report.Error then
+
+                Line = Line .. ": " .. tostring(Report.Error)
+
+            end
+
+            table.insert(Lines, Line)
+
+        end
+
+        self.StatusPopupText.Text = (#Lines > 0) and table.concat(Lines, "\n") or "Пока нет данных"
+
+    end
+
+end
+
+function Window:BeginModules(Total)
+
+    self.ModulesExpected = tonumber(Total) or 0
+
+    self:_RefreshStatus()
+
+end
+
+function Window:ReportModule(Name, Ok, Err)
+
+    table.insert(self.ModuleReports, { Name = Name, Ok = Ok and true or false, Error = Err })
+
+    self:_RefreshStatus()
+
+end
+
+function Window:_BuildStatusPopup()
+
+    local Popup = Instance.new("Frame")
+
+    Popup.Name = "ModulePopup"
+
+    Popup.Parent = self.MainFrame
+
+    Popup.AnchorPoint = Vector2.new(0,1)
+
+    Popup.Position = UDim2.new(0,8,1,-48)
+
+    Popup.Size = UDim2.fromOffset(220,0)
+
+    Popup.AutomaticSize = Enum.AutomaticSize.Y
+
+    Popup.BackgroundColor3 = CC("Option", Color3.fromRGB(39,43,51))
+
+    Popup.BorderSizePixel = 0
+
+    Popup.Visible = false
+
+    Popup.ZIndex = 20
+
+    Instance.new("UICorner",Popup).CornerRadius = RadiusSmall
+
+    local PopupStroke = Instance.new("UIStroke")
+
+    PopupStroke.Parent = Popup
+
+    PopupStroke.Color = CC("Stroke", Color3.fromRGB(58,63,75))
+
+    local PopupPadding = Instance.new("UIPadding")
+
+    PopupPadding.Parent = Popup
+
+    PopupPadding.PaddingTop = UDim.new(0,8)
+
+    PopupPadding.PaddingBottom = UDim.new(0,8)
+
+    PopupPadding.PaddingLeft = UDim.new(0,10)
+
+    PopupPadding.PaddingRight = UDim.new(0,10)
+
+    local PopupText = Instance.new("TextLabel")
+
+    PopupText.Parent = Popup
+
+    PopupText.BackgroundTransparency = 1
+
+    PopupText.Size = UDim2.new(1,0,0,0)
+
+    PopupText.AutomaticSize = Enum.AutomaticSize.Y
+
+    PopupText.Font = Enum.Font.Gotham
+
+    PopupText.TextSize = 12
+
+    PopupText.TextWrapped = true
+
+    PopupText.TextColor3 = CC("Text", Color3.new(1,1,1))
+
+    PopupText.TextXAlignment = Enum.TextXAlignment.Left
+
+    PopupText.TextYAlignment = Enum.TextYAlignment.Top
+
+    PopupText.ZIndex = 21
+
+    PopupText.Text = ""
+
+    self.StatusPopup = Popup
+
+    self.StatusPopupText = PopupText
+
+    self.StatusButton.MouseButton1Click:Connect(function()
+
+        Popup.Visible = not Popup.Visible
+
+        self:_RefreshStatus()
+
+    end)
+
+    -- если загрузчик не сообщает о модулях, не висим на "Загрузка..."
+    task.delay(8, function()
+
+        if self.StatusDot and (self.ModulesExpected or 0) == 0 and #self.ModuleReports == 0 then
+
+            self.StatusDot.BackgroundColor3 = CC("Success", Color3.fromRGB(70,194,138))
+
+            self.StatusText.Text = "Вкладок: " .. #self.Tabs
+
+        end
+
+    end)
+
+end
+
+------------------------------------------------------------
 -- Window Show
 ------------------------------------------------------------
 
@@ -1133,6 +1548,12 @@ function Window:Maximize()
     if self.OriginalSize then
 
         self.MainFrame.Size = self.OriginalSize
+
+    end
+
+    if self.StatusPopup then
+
+        self.StatusPopup.Visible = false
 
     end
 
