@@ -142,6 +142,16 @@ function Library:CreateWindow(Settings)
     selfWindow.TitleText = Settings.Title or "Universal Utility"
     selfWindow.Width = Settings.Width or 650
     selfWindow.Height = Settings.Height or 420
+
+    -- Окно не больше экрана (телефон / маленькое окно игры)
+    do
+        local Camera = workspace.CurrentCamera
+        if Camera then
+            local View = Camera.ViewportSize
+            selfWindow.Width = math.max(300, math.min(selfWindow.Width, math.floor(View.X * 0.92)))
+            selfWindow.Height = math.max(220, math.min(selfWindow.Height, math.floor(View.Y * 0.85)))
+        end
+    end
     selfWindow.Tabs = {}
     selfWindow.ActiveTab = nil
     
@@ -484,7 +494,8 @@ end)
         1,
         -3
     )
-    Handle.Size = UDim2.fromOffset(14,14)
+    local TouchDevice = game:GetService("UserInputService").TouchEnabled
+    Handle.Size = TouchDevice and UDim2.fromOffset(26,26) or UDim2.fromOffset(14,14)
     Handle.BackgroundColor3 = CC("Line", Color3.fromRGB(90,90,90))
     Handle.BorderSizePixel = 0
     Instance.new("UICorner",Handle).CornerRadius = RadiusSmall
