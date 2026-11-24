@@ -29,10 +29,6 @@ local Widgets = {}
 -- Register Widgets
 ------------------------------------------------------------
 
-------------------------------------------------------------
--- Register Widgets
-------------------------------------------------------------
-
 Widgets.Label = Import("gui/widgets/label.lua")
 
 Widgets.Button = Import("gui/widgets/button.lua")
