@@ -75,56 +75,82 @@ function Toggle.Create(Parent, Settings)
     Label.TextXAlignment = Enum.TextXAlignment.Left
 
     --------------------------------------------------------
-    -- Toggle Box
+    -- Switch (переключатель-пилюля с бегунком)
     --------------------------------------------------------
 
-    local Box = Instance.new("Frame")
+    local TweenService = game:GetService("TweenService")
 
-    Box.Parent = Button
+    local Track = Instance.new("Frame")
 
-    Box.AnchorPoint = Vector2.new(1,0.5)
+    Track.Name = "Track"
 
-    Box.Position = UDim2.new(1,-10,0.5,0)
+    Track.Parent = Button
 
-    Box.Size = UDim2.fromOffset(18,18)
+    Track.AnchorPoint = Vector2.new(1,0.5)
 
-    Box.BackgroundColor3 = C("Field", Color3.fromRGB(35,35,35))
+    Track.Position = UDim2.new(1,-10,0.5,0)
 
-    Box.BorderSizePixel = 0
+    Track.Size = UDim2.fromOffset(38,20)
 
-    Instance.new("UICorner",Box).CornerRadius = UDim.new(0,4)
+    Track.BackgroundColor3 = C("Control", Color3.fromRGB(52,56,66))
 
-    --------------------------------------------------------
+    Track.BorderSizePixel = 0
 
-    local Indicator = Instance.new("Frame")
+    Instance.new("UICorner",Track).CornerRadius = UDim.new(1,0)
 
-    Indicator.Parent = Box
+    local Knob = Instance.new("Frame")
 
-    Indicator.AnchorPoint = Vector2.new(0.5,0.5)
+    Knob.Name = "Knob"
 
-    Indicator.Position = UDim2.fromScale(0.5,0.5)
+    Knob.Parent = Track
 
-    Indicator.Size = UDim2.fromOffset(12,12)
+    Knob.AnchorPoint = Vector2.new(0,0.5)
 
-    Indicator.BorderSizePixel = 0
+    Knob.Position = UDim2.new(0,3,0.5,0)
 
-    Indicator.Visible = Value
+    Knob.Size = UDim2.fromOffset(14,14)
 
-    Indicator.BackgroundColor3 = C("Accent", Color3.fromRGB(0,170,255))
+    Knob.BackgroundColor3 = C("Knob", Color3.new(1,1,1))
 
-    Instance.new("UICorner",Indicator).CornerRadius = UDim.new(0,3)
+    Knob.BorderSizePixel = 0
+
+    Instance.new("UICorner",Knob).CornerRadius = UDim.new(1,0)
 
     --------------------------------------------------------
     -- Update
     --------------------------------------------------------
 
-    local function Update()
+    local function Apply(Animate)
 
-        Indicator.Visible = Value
+        local TrackColor = Value and C("Accent", Color3.fromRGB(70,160,255)) or C("Control", Color3.fromRGB(52,56,66))
+
+        local KnobPosition = Value and UDim2.new(1,-17,0.5,0) or UDim2.new(0,3,0.5,0)
+
+        if Animate then
+
+            local Info = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+            TweenService:Create(Track, Info, { BackgroundColor3 = TrackColor }):Play()
+
+            TweenService:Create(Knob, Info, { Position = KnobPosition }):Play()
+
+        else
+
+            Track.BackgroundColor3 = TrackColor
+
+            Knob.Position = KnobPosition
+
+        end
 
     end
 
-    Update()
+    local function Update()
+
+        Apply(true)
+
+    end
+
+    Apply(false)
 
     --------------------------------------------------------
     -- Hover

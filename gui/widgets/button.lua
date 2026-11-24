@@ -32,7 +32,7 @@ function Button.Create(Parent, Settings)
 
     ButtonObject.Parent = Parent
 
-    ButtonObject.Size = UDim2.new(1, -10, 0, 28)
+    ButtonObject.Size = UDim2.new(1, 0, 0, 28)
 
     ButtonObject.BackgroundColor3 = C("Row", Color3.fromRGB(60,60,60))
 

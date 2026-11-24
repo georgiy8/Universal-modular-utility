@@ -42,7 +42,7 @@ function Slider.Create(Parent, Settings)
     local Frame = Instance.new("Frame")
     Frame.Name = "Slider"
     Frame.Parent = Parent
-    Frame.Size = UDim2.new(1,-10,0,56)
+    Frame.Size = UDim2.new(1,0,0,56)
     Frame.BackgroundColor3 = C("Row", Color3.fromRGB(50,50,50))
     Frame.BorderSizePixel = 0
 

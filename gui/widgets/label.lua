@@ -30,7 +30,7 @@ function Label.Create(Parent, Settings)
 
     LabelObject.Parent = Parent
 
-    LabelObject.Size = UDim2.new(1, -10, 0, 24)
+    LabelObject.Size = UDim2.new(1, 0, 0, 24)
 
     LabelObject.BackgroundTransparency = 1
 
@@ -103,3 +103,4 @@ end
 ------------------------------------------------------------
 
 return Label
+

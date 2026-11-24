@@ -45,7 +45,7 @@ end
 
     ImageObject.Parent = Parent
 
-    ImageObject.Size = UDim2.new(1,-10,0,Height)
+    ImageObject.Size = UDim2.new(1,0,0,Height)
 
     ImageObject.BackgroundTransparency = 1
 
@@ -189,7 +189,7 @@ end
 
 function Image:SetHeight(Height)
 
-    self.Instance.Size = UDim2.new(1,-10,0,Height)
+    self.Instance.Size = UDim2.new(1,0,0,Height)
 
 end
 
@@ -396,3 +396,4 @@ end
 ------------------------------------------------------------
 
 return Image
+
