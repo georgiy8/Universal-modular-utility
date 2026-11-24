@@ -1083,29 +1083,23 @@ end
 -- Widget API
 ------------------------------------------------------------
 
-local WidgetMethods = {
+-- Методы Section:Add<Имя> создаются автоматически для каждого виджета из registry.lua.
+-- Новый виджет: файл gui/widgets/<имя>.lua + одна строка в registry.lua, ядро не трогаем.
+local WidgetMethods = {}
 
-    "Label",
+for RegisteredName, RegisteredWidget in pairs(Widgets) do
 
-    "Button",
+    if type(RegisteredName) == "string"
+        and type(RegisteredWidget) == "table"
+        and type(RegisteredWidget.Create) == "function" then
 
-    "Toggle",
+        table.insert(WidgetMethods, RegisteredName)
 
-    "Slider",
+    end
 
-    "Dropdown",
+end
 
-    "Textbox",
-
-    "Separator",
-
-    "Keybind",
-    
-    "Image",
-
-    "Sound"
-
-}
+table.sort(WidgetMethods)
 
 for _, WidgetName in ipairs(WidgetMethods) do
 
@@ -1122,7 +1116,7 @@ for _, WidgetName in ipairs(WidgetMethods) do
 
         local object
 
-        if WidgetName == "Sound" then
+        if WidgetName == "Sound" or Widget.NoParent == true then
             object = Widget.Create(Settings)
         else
             object = Widget.Create(self.Container, Settings)
@@ -1701,5 +1695,3 @@ end
 ------------------------------------------------------------
 
 return Library
- 
-
