@@ -1,6 +1,8 @@
 --========================================================--
 -- Universal-modular-utility GUI Library
 -- Theme.lua
+-- Единая палитра. Окно, вкладки, секции и виджеты берут цвета отсюда.
+-- Если файл не загрузился, виджеты используют свои запасные цвета.
 --========================================================--
 
 local Theme = {}
@@ -38,6 +40,8 @@ Theme.Colors = {
     Control      = Color3.fromRGB(52, 56, 66),
     ControlHover = Color3.fromRGB(72, 77, 90),
     Danger       = Color3.fromRGB(220, 85, 85),
+    Success      = Color3.fromRGB(70, 194, 138),
+    Warning      = Color3.fromRGB(240, 180, 60),
 }
 
 Theme.Radius = 8
