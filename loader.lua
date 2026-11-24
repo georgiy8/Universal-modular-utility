@@ -30,8 +30,8 @@ end
 -- Создаём окно
 local Window = GUI:CreateWindow({
     Title = " Universal-modular-utility ",
-    Width = 500,
-    Height = 400
+    Width = 680,
+    Height = 440
 })
 
 -- Загружаем игровые модули
@@ -110,6 +110,16 @@ local function ImportFrom(repo, path)
     return result
 end
 
+if Window.BeginModules then
+    Window:BeginModules(#queue)
+end
+
+local function Report(name, ok, err)
+    if Window.ReportModule then
+        Window:ReportModule(name, ok, err)
+    end
+end
+
 for _, mod in ipairs(queue) do
     local repo = mod.Repo or REPO
     local module = ImportFrom(repo, "modules/" .. mod.Name .. ".lua")
@@ -117,9 +127,13 @@ for _, mod in ipairs(queue) do
         local ok, err = pcall(module, Window, mod)
         if not ok then
             warn("[Module Error]", mod.Name, err)
+            Report(mod.Name, false, err)
+        else
+            Report(mod.Name, true)
         end
     else
         warn("[Loader] Module invalid:", mod.Name)
+        Report(mod.Name, false, "модуль не загрузился")
     end
 end
 
