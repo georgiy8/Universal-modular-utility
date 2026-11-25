@@ -512,6 +512,8 @@ end)
     
     selfWindow:_BuildStatusPopup()
 
+    selfWindow:_BuildVisibilityControls(Settings)
+
     table.insert(
         self.Windows,
         selfWindow
@@ -1334,6 +1336,111 @@ function Window:_BuildStatusPopup()
 end
 
 ------------------------------------------------------------
+-- Показать / скрыть окно
+-- Кнопка на экране (по умолчанию только на телефоне) и клавиша (по умолчанию RightShift).
+-- Settings: ToggleKey = Enum.KeyCode.X | false, ShowButton = true | false
+------------------------------------------------------------
+
+function Window:ToggleVisible()
+
+    if self.MainFrame then
+
+        self.MainFrame.Visible = not self.MainFrame.Visible
+
+    end
+
+end
+
+function Window:_BuildVisibilityControls(Settings)
+
+    local UserInputService = game:GetService("UserInputService")
+
+    local Key = Settings.ToggleKey
+
+    if Key == nil then
+
+        Key = Enum.KeyCode.RightShift
+
+    end
+
+    if Key then
+
+        self.ToggleConnection = UserInputService.InputBegan:Connect(function(Input)
+
+            if Input.KeyCode ~= Key then
+
+                return
+
+            end
+
+            -- не реагируем, пока пишешь в текстовое поле
+            if UserInputService:GetFocusedTextBox() then
+
+                return
+
+            end
+
+            self:ToggleVisible()
+
+        end)
+
+    end
+
+    local ShowButton = Settings.ShowButton
+
+    if ShowButton == nil then
+
+        ShowButton = UserInputService.TouchEnabled
+
+    end
+
+    if ShowButton then
+
+        local Open = Instance.new("TextButton")
+
+        Open.Name = "ToggleButton"
+
+        Open.Parent = self.Gui
+
+        Open.AnchorPoint = Vector2.new(0,0.5)
+
+        Open.Position = UDim2.new(0,6,0.5,0)
+
+        Open.Size = UDim2.fromOffset(44,44)
+
+        Open.BackgroundColor3 = CC("Accent", Color3.fromRGB(70,160,255))
+
+        Open.BackgroundTransparency = 0.15
+
+        Open.BorderSizePixel = 0
+
+        Open.AutoButtonColor = false
+
+        Open.Font = Enum.Font.GothamBold
+
+        Open.Text = "UMU"
+
+        Open.TextSize = 12
+
+        Open.TextColor3 = Color3.fromRGB(12,21,34)
+
+        Open.ZIndex = 30
+
+        Instance.new("UICorner",Open).CornerRadius = UDim.new(0,12)
+
+        Open.MouseButton1Click:Connect(function()
+
+            self:ToggleVisible()
+
+        end)
+
+        self.ToggleButton = Open
+
+    end
+
+end
+
+------------------------------------------------------------
 -- Window Show
 ------------------------------------------------------------
 
@@ -1366,6 +1473,14 @@ end
 ------------------------------------------------------------
 
 function Window:Destroy()
+
+    if self.ToggleConnection then
+
+        self.ToggleConnection:Disconnect()
+
+        self.ToggleConnection = nil
+
+    end
 
     if self.Gui then
 
@@ -1650,6 +1765,14 @@ end
 
 function Window:Close()
 
+    if self.ToggleConnection then
+
+        self.ToggleConnection:Disconnect()
+
+        self.ToggleConnection = nil
+
+    end
+
     if self.Gui then
 
         self.Gui:Destroy()
@@ -1695,3 +1818,5 @@ end
 ------------------------------------------------------------
 
 return Library
+ 
+
