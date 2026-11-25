@@ -104,11 +104,47 @@ function Textbox.Create(Parent, Settings)
 
     Instance.new("UICorner",Input).CornerRadius = UDim.new(0,4)
 
+    -- рамка при вводе
+    local InputStroke = Instance.new("UIStroke")
+
+    InputStroke.Parent = Input
+
+    InputStroke.Color = C("Accent", Color3.fromRGB(70,160,255))
+
+    InputStroke.Thickness = 1
+
+    InputStroke.Enabled = false
+
+    Input.Focused:Connect(function()
+
+        InputStroke.Enabled = true
+
+    end)
+
+    -- Numeric = true: только цифры, минус и точка
+    if Settings.Numeric == true then
+
+        Input:GetPropertyChangedSignal("Text"):Connect(function()
+
+            local Clean = Input.Text:gsub("[^%d%.%-]", "")
+
+            if Clean ~= Input.Text then
+
+                Input.Text = Clean
+
+            end
+
+        end)
+
+    end
+
     --------------------------------------------------------
     -- Submit
     --------------------------------------------------------
 
     Input.FocusLost:Connect(function(EnterPressed)
+
+        InputStroke.Enabled = false
 
         Value = Input.Text
 

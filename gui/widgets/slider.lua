@@ -69,16 +69,19 @@ function Slider.Create(Parent, Settings)
     -- Value
     --------------------------------------------------------
 
-    local ValueLabel = Instance.new("TextLabel")
+    -- Значение можно нажать и вписать точное число
+    local ValueLabel = Instance.new("TextBox")
     ValueLabel.Parent = Frame
     ValueLabel.BackgroundTransparency = 1
     ValueLabel.AnchorPoint = Vector2.new(1,0)
     ValueLabel.Position = UDim2.new(1,-10,0,6)
-    ValueLabel.Size = UDim2.new(0,60,0,18)
+    ValueLabel.Size = UDim2.new(0,64,0,18)
     ValueLabel.Font = Enum.Font.GothamBold
     ValueLabel.TextSize = 14
     ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
     ValueLabel.TextColor3 = C("Text", Color3.new(1,1,1))
+    ValueLabel.ClearTextOnFocus = true
+    ValueLabel.BorderSizePixel = 0
 
     --------------------------------------------------------
     -- Bar
@@ -125,6 +128,16 @@ function Slider.Create(Parent, Settings)
     KnobCorner.CornerRadius = UDim.new(1,0)
     KnobCorner.Parent = Knob
 
+    -- Невидимая зона касания вокруг полосы (удобно пальцем)
+    local Hit = Instance.new("TextButton")
+    Hit.Name = "Hit"
+    Hit.Parent = Frame
+    Hit.BackgroundTransparency = 1
+    Hit.Text = ""
+    Hit.AutoButtonColor = false
+    Hit.Position = UDim2.new(0,4,0,26)
+    Hit.Size = UDim2.new(1,-8,0,26)
+
     self.Instance = Frame
     self.Label = Label
     self.ValueLabel = ValueLabel
@@ -137,6 +150,27 @@ function Slider.Create(Parent, Settings)
         --------------------------------------------------------
     -- Internal
     --------------------------------------------------------
+
+    -- убирает хвосты вроде 0.30000000000000004
+    local function FormatValue(Value)
+
+        local Step = self.Increment
+
+        if Step > 0 and Step < 1 then
+
+            local Decimals = math.min(6, math.max(1, math.ceil(-math.log10(Step) - 1e-9)))
+
+            local Text = string.format("%." .. Decimals .. "f", Value)
+
+            Text = Text:gsub("0+$", ""):gsub("%.$", "")
+
+            return Text
+
+        end
+
+        return tostring(math.floor(Value * 1000 + 0.5) / 1000)
+
+    end
 
     local function UpdateVisual()
 
@@ -154,7 +188,7 @@ function Slider.Create(Parent, Settings)
 
         Knob.Position = UDim2.new(Alpha,0,0.5,0)
 
-        ValueLabel.Text = tostring(self.Value)
+        ValueLabel.Text = FormatValue(self.Value)
 
     end
 
@@ -208,9 +242,16 @@ function Slider.Create(Parent, Settings)
     -- Mouse
     --------------------------------------------------------
 
-    Bar.InputBegan:Connect(function(Input)
+    local function IsPointer(Input)
 
-        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+        return Input.UserInputType == Enum.UserInputType.MouseButton1
+            or Input.UserInputType == Enum.UserInputType.Touch
+
+    end
+
+    Hit.InputBegan:Connect(function(Input)
+
+        if not IsPointer(Input) then
             return
         end
 
@@ -226,7 +267,8 @@ function Slider.Create(Parent, Settings)
             return
         end
 
-        if Input.UserInputType ~= Enum.UserInputType.MouseMovement then
+        if Input.UserInputType ~= Enum.UserInputType.MouseMovement
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
             return
         end
 
@@ -236,7 +278,7 @@ function Slider.Create(Parent, Settings)
 
     UserInputService.InputEnded:Connect(function(Input)
 
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if IsPointer(Input) then
 
             Dragging = false
 
@@ -244,7 +286,22 @@ function Slider.Create(Parent, Settings)
 
     end)
 
-        --------------------------------------------------------
+    -- ввод числа вручную
+    ValueLabel.FocusLost:Connect(function()
+
+        local Number = tonumber(ValueLabel.Text)
+
+        if Number and self.Enabled then
+
+            SetValue(Number)
+
+        end
+
+        UpdateVisual()
+
+    end)
+
+    --------------------------------------------------------
     -- API
     --------------------------------------------------------
 
@@ -325,7 +382,9 @@ function Slider.Create(Parent, Settings)
 
         self.Enabled = State
 
-        Bar.Active = State
+        Hit.Active = State
+
+        ValueLabel.TextEditable = State
 
         Knob.Visible = State
 
