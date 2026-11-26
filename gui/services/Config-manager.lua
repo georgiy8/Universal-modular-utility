@@ -399,6 +399,163 @@ function ConfigManager.Delete(name)
 end
 
 ------------------------------------------------------------
+-- Экспорт / импорт профиля строкой ("UMU1:...")
+------------------------------------------------------------
+
+local B64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+local B64_LOOKUP = {}
+for i = 1, #B64_CHARS do
+    B64_LOOKUP[B64_CHARS:sub(i, i)] = i - 1
+end
+
+local function b64encode(data)
+    local out = {}
+    for i = 1, #data, 3 do
+        local a, b, c = data:byte(i, i + 2)
+        local n = a * 65536 + (b or 0) * 256 + (c or 0)
+        local c1 = math.floor(n / 262144) % 64
+        local c2 = math.floor(n / 4096) % 64
+        local c3 = math.floor(n / 64) % 64
+        local c4 = n % 64
+        table.insert(out, B64_CHARS:sub(c1 + 1, c1 + 1))
+        table.insert(out, B64_CHARS:sub(c2 + 1, c2 + 1))
+        table.insert(out, b and B64_CHARS:sub(c3 + 1, c3 + 1) or "=")
+        table.insert(out, c and B64_CHARS:sub(c4 + 1, c4 + 1) or "=")
+    end
+    return table.concat(out)
+end
+
+local function b64decode(text)
+    text = text:gsub("[^%w%+/=]", "")
+    local out = {}
+    for i = 1, #text, 4 do
+        local c1 = B64_LOOKUP[text:sub(i, i)]
+        local c2 = B64_LOOKUP[text:sub(i + 1, i + 1)]
+        local c3 = B64_LOOKUP[text:sub(i + 2, i + 2)]
+        local c4 = B64_LOOKUP[text:sub(i + 3, i + 3)]
+        if not c1 or not c2 then
+            return nil
+        end
+        local n = c1 * 262144 + c2 * 4096 + (c3 or 0) * 64 + (c4 or 0)
+        table.insert(out, string.char(math.floor(n / 65536) % 256))
+        if c3 then
+            table.insert(out, string.char(math.floor(n / 256) % 256))
+        end
+        if c4 then
+            table.insert(out, string.char(n % 256))
+        end
+    end
+    return table.concat(out)
+end
+
+local EXPORT_PREFIX = "UMU1:"
+local IMPORT_MAX_CHARS = 400000
+
+-- Строка с текущими настройками всех виджетов (то же, что попало бы в профиль)
+function ConfigManager.ExportString(name)
+    ConfigManager.Capture()
+    local payload = {
+        v = 1,
+        name = name or ConfigManager.CurrentName,
+        placeId = game.PlaceId,
+        data = ConfigManager.Data,
+    }
+    local ok, encoded = pcall(function()
+        return HttpService:JSONEncode(payload)
+    end)
+    if not ok then
+        return nil
+    end
+    return EXPORT_PREFIX .. b64encode(encoded)
+end
+
+-- пропускаем только простые значения, чужая строка не должна приносить ничего лишнего
+local function cleanValue(value, depth)
+    local kind = type(value)
+    if kind == "boolean" or kind == "number" then
+        return value, true
+    end
+    if kind == "string" then
+        if #value > 2000 then
+            return nil, false
+        end
+        return value, true
+    end
+    if kind == "table" and depth < 2 then
+        local list = {}
+        for index, item in pairs(value) do
+            if type(index) == "number" then
+                local clean, ok = cleanValue(item, depth + 1)
+                if ok then
+                    list[index] = clean
+                end
+            end
+        end
+        return list, true
+    end
+    return nil, false
+end
+
+-- Импорт: применяет настройки из строки. saveName - сохранить как профиль с этим именем.
+-- Возвращает: ok, сообщение, количество значений
+function ConfigManager.ImportString(text, saveName)
+    text = tostring(text or ""):gsub("^%s+", ""):gsub("%s+$", "")
+    if text == "" then
+        return false, "строка пустая", 0
+    end
+    if #text > IMPORT_MAX_CHARS then
+        return false, "строка слишком длинная", 0
+    end
+    if text:sub(1, #EXPORT_PREFIX) ~= EXPORT_PREFIX then
+        return false, "это не строка профиля UMU", 0
+    end
+
+    local raw = b64decode(text:sub(#EXPORT_PREFIX + 1))
+    if not raw then
+        return false, "строка повреждена", 0
+    end
+
+    local ok, payload = pcall(function()
+        return HttpService:JSONDecode(raw)
+    end)
+    if not ok or type(payload) ~= "table" or type(payload.data) ~= "table" then
+        return false, "строка повреждена", 0
+    end
+
+    local clean, count = {}, 0
+    for key, value in pairs(payload.data) do
+        if type(key) == "string" and #key <= 200 then
+            local item, valid = cleanValue(value, 0)
+            if valid then
+                clean[key] = item
+                count = count + 1
+            end
+        end
+    end
+
+    if count == 0 then
+        return false, "в строке нет настроек", 0
+    end
+
+    ConfigManager.Data = clean
+    ConfigManager.Apply()
+
+    local note = ""
+    if payload.placeId and tonumber(payload.placeId) ~= game.PlaceId then
+        note = " (профиль из другой игры: " .. tostring(payload.placeId) .. ")"
+    end
+
+    if saveName and saveName ~= "" then
+        if ConfigManager.Save(saveName) then
+            note = note .. ", сохранено как " .. tostring(ConfigManager.CurrentName)
+        end
+    end
+
+    return true, "применено значений: " .. count .. note, count
+end
+
+------------------------------------------------------------
 -- Autoload
 -- {
 --   "placeId": { "enabled": true, "config": "name", "theme": null }
