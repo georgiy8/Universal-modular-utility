@@ -61,6 +61,10 @@ Widgets.RangeSlider = Import("gui/widgets/rangeslider.lua")
 
 Widgets.List = Import("gui/widgets/list.lua")
 
+Widgets.VideoPlayer = Import("gui/widgets/videoplayer.lua")
+
+Widgets.Viewer3D = Import("gui/widgets/viewer3d.lua")
+
 ------------------------------------------------------------
 
 ------------------------------------------------------------

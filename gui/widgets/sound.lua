@@ -50,6 +50,27 @@ function SoundWidget.Create(Settings)
 
     end
 
+    -- плейлист (необязательно): Tracks = { "путь", { Name = "Имя", Path = "путь" } }
+    self.Tracks = {}
+    self.Index = 1
+    self.AutoNext = Settings.AutoNext ~= false
+
+    self._Ended = self.Instance.Ended:Connect(function()
+
+        if self.Instance and self.AutoNext and #self.Tracks > 1 and not self.Instance.Looped then
+
+            self:Next(true)
+
+        end
+
+    end)
+
+    if Settings.Tracks then
+
+        self:SetTracks(Settings.Tracks)
+
+    end
+
     return self
 
 end
@@ -132,6 +153,106 @@ end
 function SoundWidget:GetLength()
 
     return self.Instance.TimeLength
+
+end
+
+------------------------------------------------------------
+-- Playlist
+------------------------------------------------------------
+
+local function ResolveTrack(Item)
+
+    if type(Item) == "table" then
+
+        return Item.Name or Item.Text or "Track", Item.Path or Item.Sound or Item.Asset
+
+    end
+
+    return tostring(Item):match("([^/\\]+)$") or "Track", Item
+
+end
+
+function SoundWidget:SetTrack(NewIndex, AutoPlay)
+
+    if #self.Tracks == 0 or not self.Instance then
+        return
+    end
+
+    self.Index = ((NewIndex - 1) % #self.Tracks) + 1
+
+    local _, Path = ResolveTrack(self.Tracks[self.Index])
+
+    self.Instance:Stop()
+
+    self.Instance.SoundId = tostring(Path or "")
+
+    self.Instance.TimePosition = 0
+
+    if AutoPlay then
+
+        self.Instance:Play()
+
+    end
+
+    if self.OnTrackChanged then
+
+        pcall(self.OnTrackChanged, self:GetTrackName(), self.Index)
+
+    end
+
+end
+
+function SoundWidget:SetTracks(Tracks, AutoPlay)
+
+    self.Tracks = Tracks or {}
+
+    self.Index = 1
+
+    if #self.Tracks > 0 then
+
+        self:SetTrack(1, AutoPlay == true)
+
+    end
+
+end
+
+function SoundWidget:AddTrack(Track)
+
+    table.insert(self.Tracks, Track)
+
+    if #self.Tracks == 1 then
+
+        self:SetTrack(1, false)
+
+    end
+
+end
+
+function SoundWidget:Next(AutoPlay)
+
+    self:SetTrack(self.Index + 1, AutoPlay == true or self.Instance.IsPlaying)
+
+end
+
+function SoundWidget:Previous(AutoPlay)
+
+    self:SetTrack(self.Index - 1, AutoPlay == true or self.Instance.IsPlaying)
+
+end
+
+function SoundWidget:GetTrackName()
+
+    if #self.Tracks == 0 then
+        return nil
+    end
+
+    return (ResolveTrack(self.Tracks[self.Index]))
+
+end
+
+function SoundWidget:GetVolume()
+
+    return self.Volume
 
 end
 
@@ -250,6 +371,14 @@ end
 ------------------------------------------------------------
 
 function SoundWidget:Destroy()
+
+    if self._Ended then
+
+        self._Ended:Disconnect()
+
+        self._Ended = nil
+
+    end
 
     if self.Instance then
 
