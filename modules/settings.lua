@@ -191,6 +191,71 @@ return function(Window, meta)
     })
 
     ------------------------------------------------------------
+    -- Share (профиль строкой)
+    ------------------------------------------------------------
+
+    if CM and CM.ExportString and CM.ImportString then
+
+        local Share = Tab:CreateSection({ Name = "Share" })
+
+        local shareText = ""
+
+        local shareStatus = Share:AddLabel({ Text = "Export copies your settings as a string" })
+
+        local ShareBox = Share:AddTextbox({
+            Text = "Profile string",
+            Placeholder = "UMU1:...",
+            NoConfig = true,
+            Callback = function(text)
+                shareText = tostring(text or "")
+            end,
+        })
+
+        Share:AddButton({
+            Text = "Export (copy to clipboard)",
+            Callback = function()
+                local str = CM.ExportString(selectedName ~= "" and selectedName or nil)
+                if not str then
+                    shareStatus:SetText("Export failed")
+                    return
+                end
+                if setclipboard then
+                    pcall(setclipboard, str)
+                    shareStatus:SetText("Copied: " .. #str .. " chars")
+                else
+                    shareText = str
+                    ShareBox:SetValue(str)
+                    shareStatus:SetText("No clipboard here: string is in the box, copy it by hand")
+                end
+            end,
+        })
+
+        Share:AddButton({
+            Text = "Import from the string above",
+            Callback = function()
+                local text = ShareBox:GetValue()
+                if text == nil or text == "" then
+                    text = shareText
+                end
+                local ok, message = CM.ImportString(text, selectedName ~= "" and selectedName or nil)
+                shareStatus:SetText((ok and "OK: " or "Failed: ") .. tostring(message))
+                if ok then
+                    refreshStatus()
+                    refreshDropdown()
+                end
+                Window:Notify({
+                    Title = ok and "Profile imported" or "Import failed",
+                    Text = tostring(message),
+                    Type = ok and "success" or "error",
+                })
+            end,
+        })
+
+        Share:AddLabel({ Text = "Type a name in Profiles first to save the import as a profile" })
+
+    end
+
+    ------------------------------------------------------------
     -- Window (показ / скрытие окна)
     ------------------------------------------------------------
 
