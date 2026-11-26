@@ -30,6 +30,38 @@ function Keybind.Create(Parent, Settings)
 
     local Waiting = false
 
+    -- OnChanged(KeyCode): вызывается при выборе новой клавиши и при загрузке из конфига
+    local OnChanged = Settings.OnChanged
+
+    local function Notify()
+
+        if OnChanged then
+
+            pcall(OnChanged, Key)
+
+        end
+
+    end
+
+    -- пока выбираешь клавишу, глобальные горячие клавиши окна не срабатывают
+    local function SetCapturing(State)
+
+        if State then
+
+            _G.UMUCapturingKey = true
+
+        else
+
+            task.delay(0.25, function()
+
+                _G.UMUCapturingKey = false
+
+            end)
+
+        end
+
+    end
+
     local Object = {}
 
     --------------------------------------------------------
@@ -128,6 +160,8 @@ function Keybind.Create(Parent, Settings)
 
         Waiting = true
 
+        SetCapturing(true)
+
         Update()
 
     end)
@@ -156,7 +190,11 @@ function Keybind.Create(Parent, Settings)
 
                 Waiting = false
 
+                SetCapturing(false)
+
                 Update()
+
+                Notify()
 
             end
 
@@ -203,6 +241,14 @@ function Keybind.Create(Parent, Settings)
         Key = NewKey
 
         Update()
+
+        Notify()
+
+    end
+
+    function Object:SetOnChanged(NewHandler)
+
+        OnChanged = NewHandler
 
     end
 

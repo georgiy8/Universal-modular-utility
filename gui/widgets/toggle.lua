@@ -26,6 +26,17 @@ function Toggle.Create(Parent, Settings)
 
     end
 
+    -- привязка клавиши (даёт ядро): BindKey, OnBindChanged, OnToggled
+    local BindKey = Settings.BindKey
+
+    local OnBindChanged = Settings.OnBindChanged
+
+    local OnToggled = Settings.OnToggled
+
+    local UserInputService = game:GetService("UserInputService")
+
+    local AllowBind = Settings.AllowBind ~= false and UserInputService.KeyboardEnabled
+
     --------------------------------------------------------
 
     local Object = {}
@@ -62,7 +73,7 @@ function Toggle.Create(Parent, Settings)
 
     Label.Position = UDim2.fromOffset(10,0)
 
-    Label.Size = UDim2.new(1,-50,1,0)
+    Label.Size = UDim2.new(1, AllowBind and -96 or -50, 1, 0)
 
     Label.Font = Enum.Font.Gotham
 
@@ -117,6 +128,108 @@ function Toggle.Create(Parent, Settings)
     Instance.new("UICorner",Knob).CornerRadius = UDim.new(1,0)
 
     --------------------------------------------------------
+    -- Шестерёнка / клавиша
+    --------------------------------------------------------
+
+    local Capturing = false
+
+    local Gear
+
+    local function ShortKey(Key)
+
+        local Name = Key.Name
+
+        Name = Name:gsub("Control", "Ctrl"):gsub("Left", "L"):gsub("Right", "R")
+
+        return Name
+
+    end
+
+    local function RefreshGear()
+
+        if not Gear then
+
+            return
+
+        end
+
+        if Capturing then
+
+            Gear.Text = "..."
+
+            Gear.TextSize = 12
+
+            Gear.Size = UDim2.fromOffset(30,22)
+
+            Gear.BackgroundColor3 = C("Accent", Color3.fromRGB(70,160,255))
+
+            Gear.TextColor3 = Color3.fromRGB(12,21,34)
+
+        elseif BindKey then
+
+            local Name = ShortKey(BindKey)
+
+            Gear.Text = Name
+
+            Gear.TextSize = 11
+
+            Gear.Size = UDim2.fromOffset(math.max(26, #Name * 7 + 12), 22)
+
+            Gear.BackgroundColor3 = C("Field", Color3.fromRGB(23,25,30))
+
+            Gear.TextColor3 = C("Accent", Color3.fromRGB(70,160,255))
+
+        else
+
+            Gear.Text = "⚙"
+
+            Gear.TextSize = 15
+
+            Gear.Size = UDim2.fromOffset(26,22)
+
+            Gear.BackgroundColor3 = C("Control", Color3.fromRGB(52,56,66))
+
+            Gear.TextColor3 = C("TextDim", Color3.fromRGB(150,158,171))
+
+        end
+
+    end
+
+    if AllowBind then
+
+        Gear = Instance.new("TextButton")
+
+        Gear.Name = "BindButton"
+
+        Gear.Parent = Button
+
+        Gear.AnchorPoint = Vector2.new(1,0.5)
+
+        Gear.Position = UDim2.new(1,-56,0.5,0)
+
+        Gear.BorderSizePixel = 0
+
+        Gear.AutoButtonColor = false
+
+        Gear.Font = Enum.Font.GothamBold
+
+        Instance.new("UICorner",Gear).CornerRadius = UDim.new(0,5)
+
+        RefreshGear()
+
+        Gear.MouseButton1Click:Connect(function()
+
+            Capturing = true
+
+            _G.UMUCapturingKey = true
+
+            RefreshGear()
+
+        end)
+
+    end
+
+    --------------------------------------------------------
     -- Update
     --------------------------------------------------------
 
@@ -169,10 +282,10 @@ function Toggle.Create(Parent, Settings)
     end)
 
     --------------------------------------------------------
-    -- Toggle
+    -- Toggle (нажатие мышью, пальцем или назначенной клавишей)
     --------------------------------------------------------
 
-    Button.MouseButton1Click:Connect(function()
+    local function UserToggle()
 
         Value = not Value
 
@@ -189,6 +302,85 @@ function Toggle.Create(Parent, Settings)
             warn("[Toggle] "..tostring(Error))
 
         end
+
+        if OnToggled then
+
+            pcall(OnToggled, Value)
+
+        end
+
+    end
+
+    Button.MouseButton1Click:Connect(UserToggle)
+
+    local KeyConnection
+
+    KeyConnection = UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+
+        -- выбор клавиши
+        if Capturing then
+
+            if Input.UserInputType ~= Enum.UserInputType.Keyboard then
+
+                return
+
+            end
+
+            if Input.KeyCode == Enum.KeyCode.Backspace or Input.KeyCode == Enum.KeyCode.Escape then
+
+                BindKey = nil
+
+            else
+
+                BindKey = Input.KeyCode
+
+            end
+
+            Capturing = false
+
+            task.delay(0.25, function()
+
+                _G.UMUCapturingKey = false
+
+            end)
+
+            RefreshGear()
+
+            if OnBindChanged then
+
+                pcall(OnBindChanged, BindKey)
+
+            end
+
+            return
+
+        end
+
+        if GameProcessed or not BindKey or Input.KeyCode ~= BindKey then
+
+            return
+
+        end
+
+        if UserInputService:GetFocusedTextBox() or _G.UMUCapturingKey then
+
+            return
+
+        end
+
+        if not Button:IsDescendantOf(game) then
+
+            if KeyConnection then
+
+                KeyConnection:Disconnect()
+
+            end
+
+            return
+
+        end
+
+        UserToggle()
 
     end)
 
@@ -239,7 +431,33 @@ function Toggle.Create(Parent, Settings)
 
     end
 
+    function Object:UserToggle()
+
+        UserToggle()
+
+    end
+
+    function Object:GetBind()
+
+        return BindKey
+
+    end
+
+    function Object:SetBind(Key)
+
+        BindKey = Key
+
+        RefreshGear()
+
+    end
+
     function Object:Destroy()
+
+        if KeyConnection then
+
+            KeyConnection:Disconnect()
+
+        end
 
         Button:Destroy()
 
