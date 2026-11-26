@@ -1158,7 +1158,7 @@ for _, WidgetName in ipairs(WidgetMethods) do
         end
 
         local CM = _G.ConfigManager
-        if CM and CM.RegisterWidget and object then
+        if CM and CM.RegisterWidget and object and not Settings.NoConfig then
             local tabName = self.Tab and self.Tab.Name or "Tab"
             CM.RegisterWidget({
                 Kind = WidgetName,
