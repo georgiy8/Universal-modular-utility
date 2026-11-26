@@ -262,4 +262,49 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
+
+------------------------------------------------------------
+-- Batch 3 widgets
+------------------------------------------------------------
+
+local Batch3 = Tab:CreateSection({
+    Name = "Colors / Progress / Range / List"
+})
+
+local Bar = Batch3:AddProgressBar({
+    Text = "Progress",
+    Min = 0,
+    Max = 100,
+    Value = 25
+})
+
+Batch3:AddColorPicker({
+    Text = "Accent color",
+    Default = Color3.fromRGB(70,160,255),
+    Callback = function(Color)
+        Bar:SetColor(Color)
+    end
+})
+
+Batch3:AddRangeSlider({
+    Text = "Progress range",
+    Min = 0,
+    Max = 100,
+    Default = { 20, 80 },
+    Callback = function(Low, High)
+        Bar:SetValue(High)
+        Bar:SetValueText(Low .. " - " .. High)
+    end
+})
+
+Batch3:AddList({
+    Text = "Players",
+    Columns = { "Name", "Distance" },
+    Height = 120,
+    Items = { { "Alpha", "12" }, { "Bravo", "48" }, { "Charlie", "95" } },
+    Callback = function(Item)
+        print("[List] selected:", Item[1])
+    end
+})
+
 end

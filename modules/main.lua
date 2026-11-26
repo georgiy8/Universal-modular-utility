@@ -47,6 +47,7 @@ return function(Window, meta)
         Text = "PlaceId",
         Default = tostring(game.PlaceId),
         Placeholder = "PlaceId",
+        NoConfig = true,
         Callback = function() end
     })
 
@@ -54,6 +55,7 @@ return function(Window, meta)
         Text = "JobId",
         Default = tostring(game.JobId),
         Placeholder = "JobId",
+        NoConfig = true,
         Callback = function() end
     })
 
