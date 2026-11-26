@@ -307,4 +307,119 @@ Batch3:AddList({
     end
 })
 
+
+------------------------------------------------------------
+-- Batch 4 widgets (media)
+------------------------------------------------------------
+
+local Media = Tab:CreateSection({
+    Name = "Media"
+})
+
+-- плеер собран из обычных виджетов, звук и плейлист ведёт sound.lua
+local Player = SoundWidget.Create({
+    Name = "WidgetTestPlayer",
+    Volume = 0.5,
+    Tracks = {
+        { Name = "Plance lasthit", Path = Assets:GetSound("Plance_lasthit_03_ru.mp3") }
+    }
+})
+
+local NowPlaying = Media:AddLabel({
+    Text = "Now: " .. tostring(Player:GetTrackName())
+})
+
+Player.OnTrackChanged = function(Name)
+    if NowPlaying.SetText then
+        NowPlaying:SetText("Now: " .. tostring(Name))
+    end
+end
+
+Media:AddButton({
+    Text = "Prev",
+    Callback = function() Player:Previous() end
+})
+
+Media:AddButton({
+    Text = "Play / Pause",
+    Callback = function()
+        if Player:IsPlaying() then
+            Player:Pause()
+        elseif Player:GetTimePosition() > 0 then
+            Player:Resume()
+        else
+            Player.Instance:Play()
+        end
+    end
+})
+
+Media:AddButton({
+    Text = "Next",
+    Callback = function() Player:Next() end
+})
+
+Media:AddSlider({
+    Text = "Player volume",
+    Min = 0,
+    Max = 1,
+    Default = 0.5,
+    Increment = 0.05,
+    NoConfig = true,
+    Callback = function(Value) Player:SetVolume(Value) end
+})
+
+Media:AddToggle({
+    Text = "Player loop",
+    Default = false,
+    NoConfig = true,
+    Callback = function(State) Player:SetLooped(State) end
+})
+
+Media:AddTextbox({
+    Text = "Add track (path / rbxassetid)",
+    Placeholder = "rbxassetid://...",
+    NoConfig = true,
+    Callback = function(Value)
+        if Value and Value ~= "" then
+            Player:AddTrack({ Name = Value, Path = Value })
+        end
+    end
+})
+
+local Viewer = Media:AddModelViewer({
+    Text = "Your character",
+    Height = 220,
+    AutoRotate = true
+})
+
+local LocalCharacter = game:GetService("Players").LocalPlayer.Character
+if LocalCharacter then
+    Viewer:SetModel(LocalCharacter, { ImportPlaying = true })
+end
+
+Media:AddButton({
+    Text = "Reload character in viewer",
+    Callback = function()
+        local Character = game:GetService("Players").LocalPlayer.Character
+        if Character then
+            Viewer:ClearAnimations()
+            Viewer:SetModel(Character, { ImportPlaying = true })
+        end
+    end
+})
+
+local Video = Media:AddVideoPlayer({
+    Text = "Video",
+    Height = 160
+})
+
+Media:AddTextbox({
+    Text = "Video path / asset id",
+    Placeholder = "rbxassetid://... or file.webm",
+    NoConfig = true,
+    Callback = function(Value)
+        Video:SetVideo(Value, true)
+    end
+})
+
 end
