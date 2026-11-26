@@ -386,7 +386,7 @@ Media:AddTextbox({
     end
 })
 
-local Viewer = Media:AddModelViewer({
+local Viewer = Media:AddViewer3D({
     Text = "Your character",
     Height = 220,
     AutoRotate = true
