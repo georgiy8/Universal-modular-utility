@@ -29,6 +29,10 @@ local Widgets = {}
 -- Register Widgets
 ------------------------------------------------------------
 
+------------------------------------------------------------
+-- Register Widgets
+------------------------------------------------------------
+
 Widgets.Label = Import("gui/widgets/label.lua")
 
 Widgets.Button = Import("gui/widgets/button.lua")
@@ -48,6 +52,14 @@ Widgets.Keybind = Import("gui/widgets/keybind.lua")
 Widgets.Image = Import("gui/widgets/image.lua")
 
 Widgets.Sound = Import("gui/widgets/sound.lua")
+
+Widgets.ColorPicker = Import("gui/widgets/colorpicker.lua")
+
+Widgets.ProgressBar = Import("gui/widgets/progressbar.lua")
+
+Widgets.RangeSlider = Import("gui/widgets/rangeslider.lua")
+
+Widgets.List = Import("gui/widgets/list.lua")
 
 ------------------------------------------------------------
 
