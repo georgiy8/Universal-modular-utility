@@ -82,6 +82,27 @@ local function writeJson(path, tbl)
 end
 
 ------------------------------------------------------------
+-- Общие файлы (не привязаны к профилю): настройки окна и т.п.
+-- Лежат рядом с профилями: Universal-assets-by-gk/Configs/<имя>.json
+------------------------------------------------------------
+
+function ConfigManager.LoadGlobal(name)
+    name = safeName(name)
+    if not name then
+        return {}
+    end
+    return readJson(ROOT .. "/" .. name .. ".json") or {}
+end
+
+function ConfigManager.SaveGlobal(name, tbl)
+    name = safeName(name)
+    if not name or type(tbl) ~= "table" then
+        return false
+    end
+    return writeJson(ROOT .. "/" .. name .. ".json", tbl)
+end
+
+------------------------------------------------------------
 -- Init / basic data
 ------------------------------------------------------------
 
@@ -144,6 +165,22 @@ local function readWidget(entry)
         return w:GetValue()
     end
     return nil
+end
+
+-- клавиша на переключателе хранится рядом со значением: "<ключ>#bind"
+local function applyBind(entry, key)
+    local w = entry.Widget
+    if not w or not w.SetBind then
+        return
+    end
+    local name = ConfigManager.Data[key .. "#bind"]
+    if name == nil then
+        return
+    end
+    local code = (type(name) == "string" and name ~= "") and Enum.KeyCode[name] or nil
+    pcall(function()
+        w:SetBind(code)
+    end)
 end
 
 local function writeWidget(entry, value)
@@ -211,6 +248,7 @@ function ConfigManager.RegisterWidget(info)
         task.defer(function()
             if ConfigManager.Registry[key] == entry and ConfigManager.Data[key] ~= nil then
                 writeWidget(entry, ConfigManager.Data[key])
+                applyBind(entry, key)
             end
         end)
     end
@@ -231,6 +269,12 @@ function ConfigManager.Capture()
         if ok and value ~= nil then
             ConfigManager.Data[key] = value
         end
+        if entry.Widget and entry.Widget.GetBind then
+            local okBind, code = pcall(entry.Widget.GetBind, entry.Widget)
+            if okBind then
+                ConfigManager.Data[key .. "#bind"] = (typeof(code) == "EnumItem") and code.Name or ""
+            end
+        end
     end
     return ConfigManager.Data
 end
@@ -242,6 +286,7 @@ function ConfigManager.Apply()
         if value ~= nil then
             writeWidget(entry, value)
         end
+        applyBind(entry, key)
     end
 end
 
