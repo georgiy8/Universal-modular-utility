@@ -19,6 +19,8 @@ local SAVEABLE = {
     Dropdown = true,
     Textbox = true,
     Keybind = true,
+    ColorPicker = true,
+    RangeSlider = true,
 }
 
 ------------------------------------------------------------
@@ -161,6 +163,12 @@ local function readWidget(entry)
         end
         return nil
     end
+    if entry.Kind == "ColorPicker" then
+        if w.GetHex then
+            return w:GetHex()
+        end
+        return nil
+    end
     if w.GetValue then
         return w:GetValue()
     end
@@ -207,7 +215,7 @@ local function writeWidget(entry, value)
     end
     -- SetValue меняет только вид виджета; чтобы модуль тоже получил значение,
     -- вызываем Callback. У слайдера SetValue уже вызывает Callback сам.
-    if w.Fire and (entry.Kind == "Toggle" or entry.Kind == "Textbox" or entry.Kind == "Dropdown") then
+    if w.Fire and (entry.Kind == "Toggle" or entry.Kind == "Textbox" or entry.Kind == "Dropdown" or entry.Kind == "ColorPicker") then
         pcall(function()
             w:Fire()
         end)
