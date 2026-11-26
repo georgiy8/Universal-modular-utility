@@ -663,6 +663,259 @@ function AssetManager:Init()
 end
 
 ------------------------------------------------------------
+-- Media: Resolve(Source, Kind, Callback)
+--
+-- Превращает источник в ассет для Image и VideoPlayer. Kind = "image" | "video".
+--   "rbxassetid://123", 123        - ассет Roblox, как есть
+--   "folder/file.png"              - локальный файл executor (getcustomasset)
+--   "https://.../file.mp4"         - ПРЯМАЯ ссылка на файл: скачивается в кэш
+-- Callback(true, asset) или Callback(false, "текст ошибки"). Страницы сайтов
+-- (YouTube и т.п.) не поддерживаются, нужна прямая ссылка на файл.
+------------------------------------------------------------
+
+local MEDIA_CACHE = ROOT .. "/Cache"
+
+local MEDIA_MAX_BYTES = 150 * 1024 * 1024
+
+-- что понимает Roblox
+local MediaSUPPORTED = {
+    image = { png = true, jpg = true },
+    video = { mp4 = true, webm = true },
+}
+
+------------------------------------------------------------
+-- helpers
+------------------------------------------------------------
+
+local function MediaTrim(Text)
+    return (tostring(Text or ""):gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function MediaHash(Text)
+    local H = 5381
+    for Index = 1, #Text do
+        H = (H * 33 + Text:byte(Index)) % 4294967296
+    end
+    return string.format("%08x", H) .. string.format("%x", #Text)
+end
+
+-- определяем формат по первым байтам, а не по расширению (у ссылок его часто нет)
+local function MediaSniff(Body)
+
+    local Head = Body:sub(1, 64)
+
+    if Head:sub(1, 4) == "\137PNG" then
+        return "png"
+    elseif Head:sub(1, 3) == "\255\216\255" then
+        return "jpg"
+    elseif Head:sub(1, 4) == "GIF8" then
+        return "gif"
+    elseif Head:sub(1, 4) == "RIFF" and Head:sub(9, 12) == "WEBP" then
+        return "webp"
+    elseif Head:sub(1, 4) == "\26\69\223\163" then
+        if Head:find("webm", 1, true) then
+            return "webm"
+        end
+        return "mkv"
+    elseif Head:sub(5, 8) == "ftyp" then
+        local Brand = Head:sub(9, 12)
+        if Brand == "qt  " then
+            return "mov"
+        end
+        return "mp4"
+    elseif Head:sub(1, 4) == "RIFF" and Head:sub(9, 12) == "AVI " then
+        return "avi"
+    elseif Head:sub(1, 5):lower() == "<!doc" or Head:sub(1, 5):lower() == "<html" then
+        return "html"
+    end
+
+    return nil
+
+end
+
+local function MediaExtension(Path)
+    return (tostring(Path):gsub("%?.*$", ""):match("%.(%w+)$") or ""):lower()
+end
+
+local function MediaRequest(Url)
+
+    local Fn = (syn and syn.request) or http_request or request or (http and http.request)
+
+    if Fn then
+        local Ok, Response = pcall(Fn, { Url = Url, Method = "GET" })
+        if Ok and type(Response) == "table" then
+            local Code = Response.StatusCode or Response.Status
+            if (Response.Success ~= false) and (Code == nil or (Code >= 200 and Code < 300)) then
+                return Response.Body
+            end
+            return nil, "сервер ответил: " .. tostring(Code)
+        end
+    end
+
+    local Ok, Body = pcall(function()
+        return game:HttpGet(Url)
+    end)
+
+    if Ok then
+        return Body
+    end
+
+    return nil, "не удалось скачать"
+
+end
+
+local function MediaEnsureFolders()
+    if makefolder and isfolder then
+        for _, Path in ipairs({ ROOT, MEDIA_CACHE }) do
+            if not isfolder(Path) then
+                pcall(makefolder, Path)
+            end
+        end
+    end
+end
+
+local function MediaToAsset(Path)
+
+    if not getcustomasset then
+        return nil, "executor не поддерживает getcustomasset"
+    end
+
+    local Ok, Result = pcall(getcustomasset, Path)
+
+    if Ok and Result and Result ~= "" then
+        return Result
+    end
+
+    return nil, "не удалось открыть файл"
+
+end
+
+------------------------------------------------------------
+-- Resolve
+------------------------------------------------------------
+
+local function MediaRun(Source, Kind, Callback)
+
+    Source = MediaTrim(Source)
+
+    if Source == "" then
+        return Callback(true, "")
+    end
+
+    if Source:find("^rbxasset") or Source:find("^rbxthumb") then
+        return Callback(true, Source)
+    end
+
+    if tonumber(Source) then
+        return Callback(true, "rbxassetid://" .. Source)
+    end
+
+    local Allowed = MediaSUPPORTED[Kind] or MediaSUPPORTED.image
+
+    ----------------------------------------------------
+    -- ссылка
+    ----------------------------------------------------
+
+    if Source:find("^https?://") then
+
+        if not (writefile and isfile and getcustomasset) then
+            return Callback(false, "executor не умеет сохранять файлы (writefile/getcustomasset)")
+        end
+
+        MediaEnsureFolders()
+
+        -- кэш: ищем уже скачанный файл
+        local Base = MEDIA_CACHE .. "/" .. MediaHash(Source)
+
+        for Ext in pairs(Allowed) do
+            if isfile(Base .. "." .. Ext) then
+                local Asset, Err = MediaToAsset(Base .. "." .. Ext)
+                return Callback(Asset ~= nil, Asset or Err)
+            end
+        end
+
+        local Body, Err = MediaRequest(Source)
+
+        if not Body then
+            return Callback(false, Err or "не удалось скачать")
+        end
+
+        if #Body > MEDIA_MAX_BYTES then
+            return Callback(false, "файл больше 150 МБ")
+        end
+
+        local Format = MediaSniff(Body)
+
+        if Format == "html" or not Format then
+            return Callback(false, "по ссылке не файл. Нужна прямая ссылка на " .. (Kind == "video" and "mp4/webm" or "png/jpg"))
+        end
+
+        if not Allowed[Format] then
+            return Callback(false, "формат " .. Format .. " Roblox не поддерживает (нужно " .. (Kind == "video" and "mp4/webm" or "png/jpg") .. ")")
+        end
+
+        local Path = Base .. "." .. Format
+
+        local Ok = pcall(writefile, Path, Body)
+
+        if not Ok then
+            return Callback(false, "не удалось сохранить файл")
+        end
+
+        local Asset, AssetErr = MediaToAsset(Path)
+
+        return Callback(Asset ~= nil, Asset or AssetErr)
+
+    end
+
+    ----------------------------------------------------
+    -- локальный файл
+    ----------------------------------------------------
+
+    if isfile and isfile(Source) then
+
+        local Ext = MediaExtension(Source)
+
+        if Ext == "jpeg" then
+            Ext = "jpg"
+        end
+
+        if not Allowed[Ext] then
+            return Callback(false, "формат ." .. Ext .. " не поддерживается (нужно " .. (Kind == "video" and "mp4/webm" or "png/jpg") .. ")")
+        end
+
+        local Asset, Err = MediaToAsset(Source)
+
+        return Callback(Asset ~= nil, Asset or Err)
+
+    end
+
+    ----------------------------------------------------
+    -- уже готовая строка ассета (например от getcustomasset в модуле)
+    ----------------------------------------------------
+
+    return Callback(true, Source)
+
+end
+
+-- Асинхронно: скачивание не вешает интерфейс
+function AssetManager:Resolve(Source, Kind, Callback)
+
+    task.spawn(function()
+
+        local Ok, Err = pcall(MediaRun, Source, Kind, function(Success, Result)
+            pcall(Callback, Success, Result)
+        end)
+
+        if not Ok then
+            pcall(Callback, false, tostring(Err))
+        end
+
+    end)
+
+end
+
+------------------------------------------------------------
 -- Global
 ------------------------------------------------------------
 
