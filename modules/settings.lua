@@ -142,6 +142,7 @@ return function(Window, meta)
 
     Auto:AddToggle({
         Text = "Autoload on this place",
+        AllowBind = false,
         Default = autoEnabled,
         Callback = function(value)
             autoEnabled = value
@@ -188,6 +189,105 @@ return function(Window, meta)
             end
         end
     })
+
+    ------------------------------------------------------------
+    -- Window (показ / скрытие окна)
+    ------------------------------------------------------------
+
+    if Window.GetToggleKey and Window.SetToggleKey then
+
+        local WinSection = Tab:CreateSection({ Name = "Window" })
+
+        WinSection:AddKeybind({
+            Text = "Show / hide key",
+            Default = Window:GetToggleKey() or Enum.KeyCode.Unknown,
+            OnChanged = function(key)
+                Window:SetToggleKey(key)
+            end,
+        })
+
+        WinSection:AddToggle({
+            Text = "On-screen button",
+            AllowBind = false,
+            Default = Window:GetToggleButton(),
+            Callback = function(value)
+                Window:SetToggleButton(value)
+            end,
+        })
+
+        WinSection:AddSlider({
+            Text = "Button size",
+            Min = 28,
+            Max = 80,
+            Increment = 2,
+            Default = Window:GetToggleButtonSize(),
+            Callback = function(value)
+                Window:SetToggleButtonSize(value)
+            end,
+        })
+
+        WinSection:AddLabel({
+            Text = "Drag the UMU button anywhere on screen"
+        })
+
+        WinSection:AddButton({
+            Text = "Reset button position",
+            Callback = function()
+                Window:ResetToggleButtonPosition()
+            end,
+        })
+
+    end
+
+    ------------------------------------------------------------
+    -- Notifications (всплывающие окошки справа)
+    ------------------------------------------------------------
+
+    if Window.Notify and Window.GetNotifications then
+
+        local NoteSection = Tab:CreateSection({ Name = "Notifications" })
+
+        NoteSection:AddToggle({
+            Text = "Show notifications",
+            Default = Window:GetNotifications(),
+            AllowBind = false,
+            Callback = function(value)
+                Window:SetNotifications(value)
+            end,
+        })
+
+        NoteSection:AddToggle({
+            Text = "Notify when a toggle is switched",
+            Default = Window:GetNotifyToggles(),
+            AllowBind = false,
+            Callback = function(value)
+                Window:SetNotifyToggles(value)
+            end,
+        })
+
+        NoteSection:AddSlider({
+            Text = "Display time (sec)",
+            Min = 1,
+            Max = 10,
+            Increment = 0.5,
+            Default = Window:GetNotifyDuration(),
+            Callback = function(value)
+                Window:SetNotifyDuration(value)
+            end,
+        })
+
+        NoteSection:AddButton({
+            Text = "Test notification",
+            Callback = function()
+                Window:Notify({
+                    Title = "UMU",
+                    Text = "Notifications work",
+                    Type = "success",
+                })
+            end,
+        })
+
+    end
 
     if CM and CM.TryAutoload then
         task.defer(function()
