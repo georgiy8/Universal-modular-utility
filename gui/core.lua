@@ -514,6 +514,8 @@ end)
 
     selfWindow:_BuildVisibilityControls(Settings)
 
+    selfWindow:_BuildNotifications()
+
     table.insert(
         self.Windows,
         selfWindow
@@ -1116,6 +1118,37 @@ for _, WidgetName in ipairs(WidgetMethods) do
 
         Settings = Settings or {}
 
+        -- Toggle: клавиша на шестерёнке и уведомления о переключении
+        if WidgetName == "Toggle" then
+
+            local Win = self.Tab and self.Tab.Window
+
+            local TabName = self.Tab and self.Tab.Name or "Tab"
+
+            local ToggleId = TabName .. "/" .. self.Name .. "/" .. tostring(Settings.Text or "Toggle")
+
+            local Copy = {}
+
+            for Key, Value in pairs(Settings) do
+
+                Copy[Key] = Value
+
+            end
+
+            if Win and Win.Prefs then
+
+                Copy.OnToggled = function(State)
+
+                    Win:NotifyToggle(Settings.Text or "Toggle", State, ToggleId)
+
+                end
+
+            end
+
+            Settings = Copy
+
+        end
+
         local object
 
         if WidgetName == "Sound" or Widget.NoParent == true then
@@ -1236,6 +1269,42 @@ function Window:ReportModule(Name, Ok, Err)
 
     self:_RefreshStatus()
 
+    if not Ok then
+
+        self:Notify({
+            Title = "Модуль не загрузился: " .. tostring(Name),
+            Text = tostring(Err or "неизвестная ошибка"),
+            Type = "error",
+            Duration = 8,
+        })
+
+    elseif (self.ModulesExpected or 0) > 0 and #self.ModuleReports >= self.ModulesExpected then
+
+        local Failed = 0
+
+        for _, Report in ipairs(self.ModuleReports) do
+
+            if not Report.Ok then
+
+                Failed = Failed + 1
+
+            end
+
+        end
+
+        if Failed == 0 then
+
+            self:Notify({
+                Title = "UMU",
+                Text = "Все модули загружены (" .. #self.ModuleReports .. ")",
+                Type = "success",
+                Key = "modules-loaded",
+            })
+
+        end
+
+    end
+
 end
 
 function Window:_BuildStatusPopup()
@@ -1351,42 +1420,218 @@ function Window:ToggleVisible()
 
 end
 
+-- Настройки окна (клавиша, кнопка) хранятся в отдельном файле и общие для всех профилей
+local PREFS_FILE = "UMU_Window.json"
+
+local function LoadPrefs()
+
+    local HttpService = game:GetService("HttpService")
+
+    local Prefs = {}
+
+    local CM = _G.ConfigManager
+
+    if CM and CM.LoadGlobal then
+
+        return CM.LoadGlobal("Window")
+
+    end
+
+    pcall(function()
+
+        if isfile and isfile(PREFS_FILE) then
+
+            local Data = HttpService:JSONDecode(readfile(PREFS_FILE))
+
+            if type(Data) == "table" then
+
+                Prefs = Data
+
+            end
+
+        end
+
+    end)
+
+    return Prefs
+
+end
+
+function Window:_SavePrefs()
+
+    local CM = _G.ConfigManager
+
+    if CM and CM.SaveGlobal then
+
+        CM.SaveGlobal("Window", self.Prefs)
+
+        return
+
+    end
+
+    local HttpService = game:GetService("HttpService")
+
+    pcall(function()
+
+        if writefile then
+
+            writefile(PREFS_FILE, HttpService:JSONEncode(self.Prefs))
+
+        end
+
+    end)
+
+end
+
+function Window:GetToggleKey()
+
+    return self.ToggleKeyCode
+
+end
+
+-- Window:SetToggleKey(Enum.KeyCode.F4)   nil / Unknown - клавиша отключена
+function Window:SetToggleKey(Key)
+
+    if typeof(Key) ~= "EnumItem" or Key == Enum.KeyCode.Unknown then
+
+        Key = nil
+
+    end
+
+    self.ToggleKeyCode = Key
+
+    self.Prefs.ToggleKey = Key and Key.Name or "None"
+
+    self:_SavePrefs()
+
+end
+
+function Window:GetToggleButton()
+
+    return self.ToggleButton ~= nil and self.ToggleButton.Visible
+
+end
+
+function Window:SetToggleButton(State)
+
+    State = State and true or false
+
+    if self.ToggleButton then
+
+        self.ToggleButton.Visible = State
+
+    end
+
+    self.Prefs.ShowButton = State
+
+    self:_SavePrefs()
+
+end
+
+function Window:GetToggleButtonSize()
+
+    return self.Prefs.ButtonSize or 44
+
+end
+
+function Window:SetToggleButtonSize(Size)
+
+    Size = math.clamp(tonumber(Size) or 44, 28, 80)
+
+    if self.ToggleButton then
+
+        self.ToggleButton.Size = UDim2.fromOffset(Size, Size)
+
+    end
+
+    self.Prefs.ButtonSize = Size
+
+    self:_SavePrefs()
+
+end
+
+function Window:ResetToggleButtonPosition()
+
+    self.Prefs.ButtonX = nil
+
+    self.Prefs.ButtonY = nil
+
+    if self.ToggleButton then
+
+        self.ToggleButton.Position = UDim2.new(0,6,0.5,0)
+
+        self.ToggleButton.AnchorPoint = Vector2.new(0,0.5)
+
+    end
+
+    self:_SavePrefs()
+
+end
+
 function Window:_BuildVisibilityControls(Settings)
 
     local UserInputService = game:GetService("UserInputService")
 
-    local Key = Settings.ToggleKey
+    self.Prefs = LoadPrefs()
 
-    if Key == nil then
+    -- клавиша: сохранённая > из Settings.ToggleKey > RightShift
+    local KeyName = self.Prefs.ToggleKey
+
+    local Key
+
+    if KeyName == "None" then
+
+        Key = nil
+
+    elseif type(KeyName) == "string" and Enum.KeyCode[KeyName] then
+
+        Key = Enum.KeyCode[KeyName]
+
+    elseif Settings.ToggleKey == false then
+
+        Key = nil
+
+    elseif typeof(Settings.ToggleKey) == "EnumItem" then
+
+        Key = Settings.ToggleKey
+
+    else
 
         Key = Enum.KeyCode.RightShift
 
     end
 
-    if Key then
+    self.ToggleKeyCode = Key
 
-        self.ToggleConnection = UserInputService.InputBegan:Connect(function(Input)
+    self.ToggleConnection = UserInputService.InputBegan:Connect(function(Input)
 
-            if Input.KeyCode ~= Key then
+        local Current = self.ToggleKeyCode
 
-                return
+        if not Current or Input.KeyCode ~= Current then
 
-            end
+            return
 
-            -- не реагируем, пока пишешь в текстовое поле
-            if UserInputService:GetFocusedTextBox() then
+        end
 
-                return
+        -- не реагируем, пока пишешь в поле или выбираешь клавишу
+        if UserInputService:GetFocusedTextBox() or _G.UMUCapturingKey then
 
-            end
+            return
 
-            self:ToggleVisible()
+        end
 
-        end)
+        self:ToggleVisible()
+
+    end)
+
+    -- кнопка на экране: сохранённое > Settings.ShowButton > только на телефоне
+    local ShowButton = self.Prefs.ShowButton
+
+    if ShowButton == nil then
+
+        ShowButton = Settings.ShowButton
 
     end
-
-    local ShowButton = Settings.ShowButton
 
     if ShowButton == nil then
 
@@ -1394,49 +1639,559 @@ function Window:_BuildVisibilityControls(Settings)
 
     end
 
-    if ShowButton then
+    local Size = math.clamp(tonumber(self.Prefs.ButtonSize) or 44, 28, 80)
 
-        local Open = Instance.new("TextButton")
+    local Open = Instance.new("TextButton")
 
-        Open.Name = "ToggleButton"
+    Open.Name = "ToggleButton"
 
-        Open.Parent = self.Gui
+    Open.Parent = self.Gui
+
+    Open.BackgroundColor3 = CC("Accent", Color3.fromRGB(70,160,255))
+
+    Open.BackgroundTransparency = 0.15
+
+    Open.BorderSizePixel = 0
+
+    Open.AutoButtonColor = false
+
+    Open.Font = Enum.Font.GothamBold
+
+    Open.Text = "UMU"
+
+    Open.TextSize = 12
+
+    Open.TextColor3 = Color3.fromRGB(12,21,34)
+
+    Open.ZIndex = 30
+
+    Open.Size = UDim2.fromOffset(Size, Size)
+
+    Open.Visible = ShowButton and true or false
+
+    Instance.new("UICorner",Open).CornerRadius = UDim.new(0,12)
+
+    if type(self.Prefs.ButtonX) == "number" and type(self.Prefs.ButtonY) == "number" then
+
+        Open.AnchorPoint = Vector2.new(0.5,0.5)
+
+        Open.Position = UDim2.fromScale(
+            math.clamp(self.Prefs.ButtonX, 0.02, 0.98),
+            math.clamp(self.Prefs.ButtonY, 0.02, 0.98)
+        )
+
+    else
 
         Open.AnchorPoint = Vector2.new(0,0.5)
 
         Open.Position = UDim2.new(0,6,0.5,0)
 
-        Open.Size = UDim2.fromOffset(44,44)
+    end
 
-        Open.BackgroundColor3 = CC("Accent", Color3.fromRGB(70,160,255))
+    -- перетаскивание: короткое касание - показать/скрыть, сдвиг - переместить кнопку
+    local Pressing = false
+    local Moved = false
+    local StartPointer, StartCenter
 
-        Open.BackgroundTransparency = 0.15
+    Open.InputBegan:Connect(function(Input)
 
-        Open.BorderSizePixel = 0
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
 
-        Open.AutoButtonColor = false
+            return
 
-        Open.Font = Enum.Font.GothamBold
+        end
 
-        Open.Text = "UMU"
+        Pressing = true
 
-        Open.TextSize = 12
+        Moved = false
 
-        Open.TextColor3 = Color3.fromRGB(12,21,34)
+        StartPointer = Vector2.new(Input.Position.X, Input.Position.Y)
 
-        Open.ZIndex = 30
+        StartCenter = Open.AbsolutePosition + Open.AbsoluteSize / 2
 
-        Instance.new("UICorner",Open).CornerRadius = UDim.new(0,12)
+    end)
 
-        Open.MouseButton1Click:Connect(function()
+    local ChangedConnection = UserInputService.InputChanged:Connect(function(Input)
+
+        if not Pressing then
+
+            return
+
+        end
+
+        if Input.UserInputType ~= Enum.UserInputType.MouseMovement
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
+
+            return
+
+        end
+
+        local Pointer = Vector2.new(Input.Position.X, Input.Position.Y)
+
+        if not Moved and (Pointer - StartPointer).Magnitude > 8 then
+
+            Moved = true
+
+        end
+
+        if Moved and self.Gui then
+
+            local Screen = self.Gui.AbsoluteSize
+
+            local Center = StartCenter + (Pointer - StartPointer)
+
+            local PX = math.clamp(Center.X / Screen.X, 0.02, 0.98)
+
+            local PY = math.clamp(Center.Y / Screen.Y, 0.02, 0.98)
+
+            Open.AnchorPoint = Vector2.new(0.5,0.5)
+
+            Open.Position = UDim2.fromScale(PX, PY)
+
+            self.Prefs.ButtonX = PX
+
+            self.Prefs.ButtonY = PY
+
+        end
+
+    end)
+
+    local EndedConnection = UserInputService.InputEnded:Connect(function(Input)
+
+        if not Pressing then
+
+            return
+
+        end
+
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1
+            and Input.UserInputType ~= Enum.UserInputType.Touch then
+
+            return
+
+        end
+
+        Pressing = false
+
+        if Moved then
+
+            self:_SavePrefs()
+
+        else
 
             self:ToggleVisible()
 
-        end)
+        end
 
-        self.ToggleButton = Open
+    end)
+
+    self.ToggleButton = Open
+
+    self.ExtraConnections = { ChangedConnection, EndedConnection }
+
+end
+
+------------------------------------------------------------
+-- Уведомления справа
+-- Window:Notify({ Title = "...", Text = "...", Type = "info|success|warn|error",
+--                 Duration = 3.5, Key = "для замены прошлого", Sound = "rbxassetid://..." })
+------------------------------------------------------------
+
+local NOTIFY_MAX = 5
+
+function Window:_BuildNotifications()
+
+    local Host = Instance.new("Frame")
+
+    Host.Name = "Notifications"
+
+    Host.Parent = self.Gui
+
+    Host.AnchorPoint = Vector2.new(1,1)
+
+    Host.Position = UDim2.new(1,-14,1,-14)
+
+    Host.Size = UDim2.new(0,270,1,-28)
+
+    Host.BackgroundTransparency = 1
+
+    Host.ZIndex = 40
+
+    local HostLayout = Instance.new("UIListLayout")
+
+    HostLayout.Parent = Host
+
+    HostLayout.Padding = UDim.new(0,6)
+
+    HostLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    HostLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+
+    self.NotifyHost = Host
+
+    self.NotifyList = {}
+
+    self.NotifyByKey = {}
+
+    self.NotifyCounter = 0
+
+end
+
+function Window:GetNotifications()
+
+    return self.Prefs.Notifications ~= false
+
+end
+
+function Window:SetNotifications(State)
+
+    self.Prefs.Notifications = State and true or false
+
+    self:_SavePrefs()
+
+end
+
+function Window:GetNotifyToggles()
+
+    return self.Prefs.NotifyToggles ~= false
+
+end
+
+function Window:SetNotifyToggles(State)
+
+    self.Prefs.NotifyToggles = State and true or false
+
+    self:_SavePrefs()
+
+end
+
+function Window:GetNotifyDuration()
+
+    return tonumber(self.Prefs.NotifyDuration) or 3.5
+
+end
+
+function Window:SetNotifyDuration(Seconds)
+
+    self.Prefs.NotifyDuration = math.clamp(tonumber(Seconds) or 3.5, 1, 15)
+
+    self:_SavePrefs()
+
+end
+
+function Window:_DismissNotification(Entry)
+
+    if Entry.Dismissed then
+
+        return
 
     end
+
+    Entry.Dismissed = true
+
+    for Index, Other in ipairs(self.NotifyList) do
+
+        if Other == Entry then
+
+            table.remove(self.NotifyList, Index)
+
+            break
+
+        end
+
+    end
+
+    if Entry.Key and self.NotifyByKey[Entry.Key] == Entry then
+
+        self.NotifyByKey[Entry.Key] = nil
+
+    end
+
+    local Tween = TweenService:Create(
+        Entry.Card,
+        TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { Position = UDim2.new(1,24,0,0) }
+    )
+
+    Tween:Play()
+
+    Tween.Completed:Once(function()
+
+        Entry.Holder:Destroy()
+
+    end)
+
+end
+
+function Window:Notify(Options)
+
+    if not self.NotifyHost or not self.Gui then
+
+        return
+
+    end
+
+    Options = Options or {}
+
+    local Kind = Options.Type or "info"
+
+    -- при выключенных уведомлениях показываем только ошибки
+    if not self:GetNotifications() and Kind ~= "error" then
+
+        return
+
+    end
+
+    local Colors = {
+        info = CC("Accent", Color3.fromRGB(70,160,255)),
+        success = CC("Success", Color3.fromRGB(70,194,138)),
+        warn = CC("Warning", Color3.fromRGB(240,180,60)),
+        error = CC("Danger", Color3.fromRGB(220,85,85)),
+    }
+
+    local Accent = Colors[Kind] or Colors.info
+
+    local Duration = tonumber(Options.Duration) or self:GetNotifyDuration()
+
+    if Options.Sound and _G.SoundWidget then
+
+        pcall(_G.SoundWidget.Play, Options.Sound)
+
+    end
+
+    -- то же событие (Key) обновляет прошлое уведомление, а не копится стопкой
+    local Existing = Options.Key and self.NotifyByKey[Options.Key]
+
+    if Existing and not Existing.Dismissed then
+
+        Existing.Title.Text = tostring(Options.Title or "")
+
+        Existing.Body.Text = tostring(Options.Text or "")
+
+        Existing.Bar.BackgroundColor3 = Accent
+
+        Existing.Token = Existing.Token + 1
+
+        local Token = Existing.Token
+
+        task.delay(Duration, function()
+
+            if Existing.Token == Token then
+
+                self:_DismissNotification(Existing)
+
+            end
+
+        end)
+
+        return Existing
+
+    end
+
+    self.NotifyCounter = self.NotifyCounter + 1
+
+    local Holder = Instance.new("Frame")
+
+    Holder.Name = "Notice"
+
+    Holder.Parent = self.NotifyHost
+
+    Holder.LayoutOrder = self.NotifyCounter
+
+    Holder.BackgroundTransparency = 1
+
+    Holder.Size = UDim2.new(1,0,0,0)
+
+    Holder.AutomaticSize = Enum.AutomaticSize.Y
+
+    local Card = Instance.new("TextButton")
+
+    Card.Parent = Holder
+
+    Card.Text = ""
+
+    Card.AutoButtonColor = false
+
+    Card.Position = UDim2.new(1,24,0,0)
+
+    Card.Size = UDim2.new(1,0,0,0)
+
+    Card.AutomaticSize = Enum.AutomaticSize.Y
+
+    Card.BackgroundColor3 = CC("Option", Color3.fromRGB(39,43,51))
+
+    Card.BorderSizePixel = 0
+
+    Card.ZIndex = 41
+
+    Instance.new("UICorner",Card).CornerRadius = RadiusSmall
+
+    local CardStroke = Instance.new("UIStroke")
+
+    CardStroke.Parent = Card
+
+    CardStroke.Color = CC("Stroke", Color3.fromRGB(58,63,75))
+
+    local Bar = Instance.new("Frame")
+
+    Bar.Parent = Card
+
+    Bar.Size = UDim2.new(0,3,1,0)
+
+    Bar.BackgroundColor3 = Accent
+
+    Bar.BorderSizePixel = 0
+
+    Bar.ZIndex = 42
+
+    local Inner = Instance.new("Frame")
+
+    Inner.Parent = Card
+
+    Inner.BackgroundTransparency = 1
+
+    Inner.Position = UDim2.fromOffset(12,0)
+
+    Inner.Size = UDim2.new(1,-12,0,0)
+
+    Inner.AutomaticSize = Enum.AutomaticSize.Y
+
+    local InnerLayout = Instance.new("UIListLayout")
+
+    InnerLayout.Parent = Inner
+
+    InnerLayout.Padding = UDim.new(0,2)
+
+    local InnerPadding = Instance.new("UIPadding")
+
+    InnerPadding.Parent = Inner
+
+    InnerPadding.PaddingTop = UDim.new(0,8)
+
+    InnerPadding.PaddingBottom = UDim.new(0,8)
+
+    InnerPadding.PaddingRight = UDim.new(0,10)
+
+    local Title = Instance.new("TextLabel")
+
+    Title.Parent = Inner
+
+    Title.BackgroundTransparency = 1
+
+    Title.Size = UDim2.new(1,0,0,0)
+
+    Title.AutomaticSize = Enum.AutomaticSize.Y
+
+    Title.Font = Enum.Font.GothamBold
+
+    Title.TextSize = 13
+
+    Title.TextWrapped = true
+
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    Title.TextColor3 = CC("Text", Color3.new(1,1,1))
+
+    Title.Text = tostring(Options.Title or "")
+
+    Title.ZIndex = 42
+
+    Title.LayoutOrder = 1
+
+    local Body = Instance.new("TextLabel")
+
+    Body.Parent = Inner
+
+    Body.BackgroundTransparency = 1
+
+    Body.Size = UDim2.new(1,0,0,0)
+
+    Body.AutomaticSize = Enum.AutomaticSize.Y
+
+    Body.Font = Enum.Font.Gotham
+
+    Body.TextSize = 12
+
+    Body.TextWrapped = true
+
+    Body.TextXAlignment = Enum.TextXAlignment.Left
+
+    Body.TextColor3 = CC("TextMuted", Color3.fromRGB(184,190,201))
+
+    Body.Text = tostring(Options.Text or "")
+
+    Body.ZIndex = 42
+
+    Body.LayoutOrder = 2
+
+    local Entry = {
+        Holder = Holder,
+        Card = Card,
+        Title = Title,
+        Body = Body,
+        Bar = Bar,
+        Key = Options.Key,
+        Token = 1,
+        Dismissed = false,
+    }
+
+    table.insert(self.NotifyList, Entry)
+
+    if Options.Key then
+
+        self.NotifyByKey[Options.Key] = Entry
+
+    end
+
+    TweenService:Create(
+        Card,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Position = UDim2.new(0,0,0,0) }
+    ):Play()
+
+    Card.MouseButton1Click:Connect(function()
+
+        self:_DismissNotification(Entry)
+
+    end)
+
+    while #self.NotifyList > NOTIFY_MAX do
+
+        self:_DismissNotification(self.NotifyList[1])
+
+    end
+
+    task.delay(Duration, function()
+
+        if Entry.Token == 1 then
+
+            self:_DismissNotification(Entry)
+
+        end
+
+    end)
+
+    return Entry
+
+end
+
+-- Уведомление о переключателе (вызывается самим тоглом при нажатии или по клавише)
+function Window:NotifyToggle(Name, State, Id)
+
+    if not self:GetNotifyToggles() then
+
+        return
+
+    end
+
+    self:Notify({
+        Title = tostring(Name),
+        Text = State and "Включено" or "Выключено",
+        Type = State and "success" or "info",
+        Key = "toggle:" .. tostring(Id or Name),
+        Duration = 2.2,
+    })
 
 end
 
@@ -1479,6 +2234,18 @@ function Window:Destroy()
         self.ToggleConnection:Disconnect()
 
         self.ToggleConnection = nil
+
+    end
+
+    if self.ExtraConnections then
+
+        for _, Connection in ipairs(self.ExtraConnections) do
+
+            Connection:Disconnect()
+
+        end
+
+        self.ExtraConnections = nil
 
     end
 
@@ -1770,6 +2537,18 @@ function Window:Close()
         self.ToggleConnection:Disconnect()
 
         self.ToggleConnection = nil
+
+    end
+
+    if self.ExtraConnections then
+
+        for _, Connection in ipairs(self.ExtraConnections) do
+
+            Connection:Disconnect()
+
+        end
+
+        self.ExtraConnections = nil
 
     end
 
