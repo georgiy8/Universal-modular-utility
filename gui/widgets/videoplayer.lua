@@ -1,7 +1,10 @@
 --========================================================--
 -- Universal-modular-utility GUI Library
 -- VideoPlayer Widget (VideoFrame: пауза, перемотка, громкость)
--- Path = "rbxassetid://..." или путь к локальному файлу (.webm/.mp4) в папке executor
+-- Path = "rbxassetid://..", id, путь к файлу или ПРЯМАЯ ссылка на .mp4 / .webm
+-- Ссылки скачиваются в кэш (Universal-assets-by-gk/Cache) и проигрываются оттуда.
+-- Roblox играет только mp4 и webm; другие форматы (mkv, avi, mov, gif) и страницы
+-- сайтов (YouTube и т.п.) не поддерживаются - виджет покажет причину.
 -- Не сохраняется в профили.
 --========================================================--
 
@@ -25,34 +28,6 @@ local function FormatTime(Seconds)
     return string.format("%d:%02d", Seconds // 60, Seconds % 60)
 end
 
--- локальный файл превращаем в asset через getcustomasset, остальное отдаём как есть
-local function ResolveVideo(Path)
-
-    Path = tostring(Path or "")
-
-    if Path == "" then
-        return ""
-    end
-
-    if Path:find("^rbxasset") or Path:find("^http") then
-        return Path
-    end
-
-    if tonumber(Path) then
-        return "rbxassetid://" .. Path
-    end
-
-    if getcustomasset and isfile and isfile(Path) then
-        local Ok, Result = pcall(getcustomasset, Path)
-        if Ok then
-            return Result
-        end
-    end
-
-    return Path
-
-end
-
 function VideoPlayer.Create(Parent, Settings)
 
     Settings = Settings or {}
@@ -64,7 +39,7 @@ function VideoPlayer.Create(Parent, Settings)
     local Frame = Instance.new("Frame")
     Frame.Name = "VideoPlayer"
     Frame.Parent = Parent
-    Frame.Size = UDim2.new(1,0,0,Height + 66)
+    Frame.Size = UDim2.new(1,0,0,Height + 92)
     Frame.BackgroundColor3 = C("Row", Color3.fromRGB(45,49,58))
     Frame.BorderSizePixel = 0
     Instance.new("UICorner",Frame).CornerRadius = UDim.new(0,6)
@@ -96,15 +71,16 @@ function VideoPlayer.Create(Parent, Settings)
     Placeholder.Size = UDim2.fromScale(1,1)
     Placeholder.Font = Enum.Font.Gotham
     Placeholder.TextSize = 13
+    Placeholder.TextWrapped = true
     Placeholder.TextColor3 = Color3.fromRGB(150,158,171)
     Placeholder.Text = "Нет видео"
-    Placeholder.ZIndex = 0
+    Placeholder.ZIndex = 2
 
-    local Y = Height + 38
+    local Y = Height + 30
 
     local SeekBar = Instance.new("Frame")
     SeekBar.Parent = Frame
-    SeekBar.Position = UDim2.new(0,10,0,Y + 4)
+    SeekBar.Position = UDim2.new(0,10,0,Y + 9)
     SeekBar.Size = UDim2.new(1,-100,0,6)
     SeekBar.BorderSizePixel = 0
     SeekBar.BackgroundColor3 = C("Field", Color3.fromRGB(23,25,30))
@@ -122,14 +98,14 @@ function VideoPlayer.Create(Parent, Settings)
     SeekHit.BackgroundTransparency = 1
     SeekHit.Text = ""
     SeekHit.AutoButtonColor = false
-    SeekHit.Position = UDim2.new(0,10,0,Y - 4)
-    SeekHit.Size = UDim2.new(1,-100,0,22)
+    SeekHit.Position = UDim2.new(0,10,0,Y)
+    SeekHit.Size = UDim2.new(1,-100,0,24)
 
     local TimeLabel = Instance.new("TextLabel")
     TimeLabel.Parent = Frame
     TimeLabel.BackgroundTransparency = 1
     TimeLabel.AnchorPoint = Vector2.new(1,0)
-    TimeLabel.Position = UDim2.new(1,-10,0,Y - 4)
+    TimeLabel.Position = UDim2.new(1,-10,0,Y + 3)
     TimeLabel.Size = UDim2.fromOffset(80,18)
     TimeLabel.Font = Enum.Font.Gotham
     TimeLabel.TextSize = 12
@@ -139,7 +115,7 @@ function VideoPlayer.Create(Parent, Settings)
 
     local Play = Instance.new("TextButton")
     Play.Parent = Frame
-    Play.Position = UDim2.new(0,10,0,Y + 16)
+    Play.Position = UDim2.new(0,10,0,Y + 30)
     Play.Size = UDim2.fromOffset(44,26)
     Play.BackgroundColor3 = C("Field", Color3.fromRGB(23,25,30))
     Play.BorderSizePixel = 0
@@ -152,7 +128,7 @@ function VideoPlayer.Create(Parent, Settings)
 
     local VolBar = Instance.new("Frame")
     VolBar.Parent = Frame
-    VolBar.Position = UDim2.new(0,100,0,Y + 26)
+    VolBar.Position = UDim2.new(0,100,0,Y + 40)
     VolBar.Size = UDim2.new(1,-116,0,6)
     VolBar.BorderSizePixel = 0
     VolBar.BackgroundColor3 = C("Field", Color3.fromRGB(23,25,30))
@@ -170,13 +146,13 @@ function VideoPlayer.Create(Parent, Settings)
     VolHit.BackgroundTransparency = 1
     VolHit.Text = ""
     VolHit.AutoButtonColor = false
-    VolHit.Position = UDim2.new(0,100,0,Y + 18)
+    VolHit.Position = UDim2.new(0,100,0,Y + 32)
     VolHit.Size = UDim2.new(1,-116,0,22)
 
     local VolText = Instance.new("TextLabel")
     VolText.Parent = Frame
     VolText.BackgroundTransparency = 1
-    VolText.Position = UDim2.new(0,60,0,Y + 16)
+    VolText.Position = UDim2.new(0,60,0,Y + 30)
     VolText.Size = UDim2.fromOffset(36,26)
     VolText.Font = Enum.Font.Gotham
     VolText.TextSize = 12
@@ -277,21 +253,85 @@ function VideoPlayer.Create(Parent, Settings)
     Object.Instance = Frame
     Object.Video = Video
 
-    function Object:SetVideo(Path, AutoPlay)
+    local Token = 0
+
+    local function ShowStatus(Text)
+        Placeholder.Text = Text
+        Placeholder.Visible = (Text ~= "")
+    end
+
+    function Object:SetVideo(Source, AutoPlay)
+
+        Token = Token + 1
+
+        local Mine = Token
 
         Video:Pause()
 
-        Video.Video = ResolveVideo(Path)
-
-        Placeholder.Visible = (Video.Video == "")
+        Video.Video = ""
 
         Video.TimePosition = 0
 
-        if AutoPlay and Video.Video ~= "" then
-            Video:Play()
+        Refresh()
+
+        local Text = tostring(Source or "")
+
+        if Text == "" then
+            ShowStatus("Нет видео")
+            return
         end
 
-        Refresh()
+        ShowStatus("Загрузка...")
+
+        local Loader = _G.Assets
+
+        local function Open(Asset)
+
+            if Mine ~= Token or not Frame.Parent then
+                return
+            end
+
+            Video.Video = Asset
+
+            -- если за 15 секунд видео не открылось - формат или кодек не подошёл
+            task.delay(15, function()
+                if Mine == Token and Frame.Parent and not Video.IsLoaded then
+                    ShowStatus("Не удалось открыть видео (формат или кодек не поддерживается)")
+                end
+            end)
+
+            local Done
+            Done = Video.Loaded:Connect(function()
+                Done:Disconnect()
+                if Mine == Token then
+                    ShowStatus("")
+                    Refresh()
+                    if AutoPlay then
+                        Video:Play()
+                    end
+                end
+            end)
+
+        end
+
+        if not Loader then
+            Open(Text)
+            return
+        end
+
+        Loader:Resolve(Text, "video", function(Ok, Result)
+
+            if Mine ~= Token or not Frame.Parent then
+                return
+            end
+
+            if Ok then
+                Open(Result)
+            else
+                ShowStatus(tostring(Result))
+            end
+
+        end)
 
     end
 
