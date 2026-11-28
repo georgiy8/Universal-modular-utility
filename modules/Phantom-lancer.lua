@@ -134,10 +134,19 @@ return function(Window, meta)
         Name = "Image"
     })
 
-    Images:AddImage({
+    local TestImage = Images:AddImage({
         Image = Assets:GetImage("phantom.png"),
         Height = 220,
         AspectRatio = 16/9
+    })
+
+    Images:AddTextbox({
+        Text = "Image link / file / id",
+        Placeholder = "https://.../image.png",
+        NoConfig = true,
+        Callback = function(Value)
+            TestImage:SetImage(Value)
+        end
     })
 
     ------------------------------------------------------------
@@ -187,8 +196,20 @@ local Audio = Tab:CreateSection({
 })
 
 local s = SoundWidget.Create({
-    Path = Assets:GetSound("Plance_lasthit_03_ru.mp3")
+    Name = "WidgetTestSound",
+    Volume = 0.5,
+    Tracks = {
+        { Name = "Plance lasthit", Path = Assets:GetSound("Plance_lasthit_03_ru.mp3") }
+    }
 })
+
+local NowPlaying = Audio:AddLabel({
+    Text = "Now: " .. tostring(s:GetTrackName())
+})
+
+s.OnTrackChanged = function(Name)
+    NowPlaying:SetText("Now: " .. tostring(Name))
+end
 
 Audio:AddButton({
     Text = "Play",
@@ -215,6 +236,52 @@ Audio:AddButton({
     Text = "Stop",
     Callback = function()
         s:Stop()
+    end
+})
+
+Audio:AddButton({
+    Text = "Prev track",
+    Callback = function()
+        s:Previous()
+    end
+})
+
+Audio:AddButton({
+    Text = "Next track",
+    Callback = function()
+        s:Next()
+    end
+})
+
+Audio:AddSlider({
+    Text = "Volume",
+    Min = 0,
+    Max = 1,
+    Default = 0.5,
+    Increment = 0.05,
+    NoConfig = true,
+    Callback = function(Value)
+        s:SetVolume(Value)
+    end
+})
+
+Audio:AddToggle({
+    Text = "Loop",
+    Default = false,
+    NoConfig = true,
+    Callback = function(State)
+        s:SetLooped(State)
+    end
+})
+
+Audio:AddTextbox({
+    Text = "Add track (path / rbxassetid)",
+    Placeholder = "rbxassetid://...",
+    NoConfig = true,
+    Callback = function(Value)
+        if Value and Value ~= "" then
+            s:AddTrack({ Name = Value, Path = Value })
+        end
     end
 })
 
@@ -316,80 +383,11 @@ local Media = Tab:CreateSection({
     Name = "Media"
 })
 
--- плеер собран из обычных виджетов, звук и плейлист ведёт sound.lua
-local Player = SoundWidget.Create({
-    Name = "WidgetTestPlayer",
-    Volume = 0.5,
-    Tracks = {
-        { Name = "Plance lasthit", Path = Assets:GetSound("Plance_lasthit_03_ru.mp3") }
-    }
-})
-
-local NowPlaying = Media:AddLabel({
-    Text = "Now: " .. tostring(Player:GetTrackName())
-})
-
-Player.OnTrackChanged = function(Name)
-    if NowPlaying.SetText then
-        NowPlaying:SetText("Now: " .. tostring(Name))
-    end
-end
-
-Media:AddButton({
-    Text = "Prev",
-    Callback = function() Player:Previous() end
-})
-
-Media:AddButton({
-    Text = "Play / Pause",
-    Callback = function()
-        if Player:IsPlaying() then
-            Player:Pause()
-        elseif Player:GetTimePosition() > 0 then
-            Player:Resume()
-        else
-            Player.Instance:Play()
-        end
-    end
-})
-
-Media:AddButton({
-    Text = "Next",
-    Callback = function() Player:Next() end
-})
-
-Media:AddSlider({
-    Text = "Player volume",
-    Min = 0,
-    Max = 1,
-    Default = 0.5,
-    Increment = 0.05,
-    NoConfig = true,
-    Callback = function(Value) Player:SetVolume(Value) end
-})
-
-Media:AddToggle({
-    Text = "Player loop",
-    Default = false,
-    NoConfig = true,
-    Callback = function(State) Player:SetLooped(State) end
-})
-
-Media:AddTextbox({
-    Text = "Add track (path / rbxassetid)",
-    Placeholder = "rbxassetid://...",
-    NoConfig = true,
-    Callback = function(Value)
-        if Value and Value ~= "" then
-            Player:AddTrack({ Name = Value, Path = Value })
-        end
-    end
-})
-
 local Viewer = Media:AddViewer3D({
     Text = "Your character",
     Height = 220,
-    AutoRotate = true
+    AutoRotate = true,
+    Simple = true
 })
 
 local LocalCharacter = game:GetService("Players").LocalPlayer.Character
@@ -415,7 +413,7 @@ local Video = Media:AddVideoPlayer({
 
 Media:AddTextbox({
     Text = "Video path / asset id",
-    Placeholder = "rbxassetid://... or file.webm",
+    Placeholder = "link .mp4/.webm, file or rbxassetid",
     NoConfig = true,
     Callback = function(Value)
         Video:SetVideo(Value, true)
