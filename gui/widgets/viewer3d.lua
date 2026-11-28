@@ -6,6 +6,12 @@
 -- Animations = { Idle = "rbxassetid://..", Attack = "rbxassetid://.." }
 -- ImportPlaying = true - взять анимации, которые сейчас играют у оригинала
 --
+-- FPS = 0 (по умолчанию): картинка обновляется с частотой кадров Roblox; FPS = 30 - ограничить.
+-- Simple = true: убрать аксессуары и одежду (быстрее на тяжёлых персонажах).
+-- StepAnimations = true: двигать анимацию вручную каждый кадр (если анимация идёт рывками;
+-- если станет быстрее, чем надо - выключить).
+-- Когда окно или вкладка скрыты, просмотр и анимация ставятся на паузу.
+--
 -- Управление: тянуть - вращать, колесо / щипок / кнопки +/- - приблизить.
 -- Не сохраняется в профили.
 --========================================================--
@@ -32,6 +38,12 @@ function Viewer3D.Create(Parent, Settings)
     local Height = Settings.Height or 220
     local AutoRotate = Settings.AutoRotate == true
     local RotateSpeed = Settings.RotateSpeed or 0.6
+    local StepAnim = Settings.StepAnimations == true
+    local FrameInterval = (Settings.FPS and Settings.FPS > 0) and (1 / Settings.FPS) or 0
+    local Accumulated = 0
+    local Dirty = true
+    local Shown = true
+    local ShownCheck = 0
 
     local Object = {}
 
@@ -156,12 +168,21 @@ function Viewer3D.Create(Parent, Settings)
     -- Camera
     --------------------------------------------------------
 
-    local function UpdateCamera()
+    local function ApplyCamera()
 
         Camera.CFrame = CFrame.new(Center)
             * CFrame.Angles(0, Yaw, 0)
             * CFrame.Angles(Pitch, 0, 0)
             * CFrame.new(0, 0, Distance)
+
+        Dirty = false
+
+    end
+
+    -- камера обновляется один раз за кадр, а не на каждое движение мыши
+    local function UpdateCamera()
+
+        Dirty = true
 
     end
 
@@ -176,7 +197,7 @@ function Viewer3D.Create(Parent, Settings)
     ZoomIn.MouseButton1Click:Connect(function() Zoom(0.8) end)
     ZoomOut.MouseButton1Click:Connect(function() Zoom(1.25) end)
 
-    UpdateCamera()
+    ApplyCamera()
 
     --------------------------------------------------------
     -- Input
@@ -252,11 +273,84 @@ function Viewer3D.Create(Parent, Settings)
 
     end)
 
-    local Step = RunService.RenderStepped:Connect(function(Delta)
-        if AutoRotate and not Dragging and Clone and Frame.Visible then
-            Yaw = Yaw + Delta * RotateSpeed
-            UpdateCamera()
+    -- виден ли просмотр на самом деле: родители включены, окно не скрыто
+    local function IsShown()
+
+        local Node = Viewport
+
+        while Node and Node ~= game do
+
+            if Node:IsA("GuiObject") and not Node.Visible then
+                return false
+            end
+
+            if Node:IsA("LayerCollector") then
+                return Node.Enabled
+            end
+
+            Node = Node.Parent
+
         end
+
+        return false
+
+    end
+
+    local function SetShown(State)
+
+        if State == Shown then
+            return
+        end
+
+        Shown = State
+
+        if CurrentTrack then
+            pcall(function()
+                CurrentTrack:AdjustSpeed(State and 1 or 0)
+            end)
+        end
+
+    end
+
+    local Step = RunService.RenderStepped:Connect(function(Delta)
+
+        ShownCheck = ShownCheck + Delta
+
+        if ShownCheck >= 0.25 then
+            ShownCheck = 0
+            SetShown(IsShown())
+        end
+
+        if not Shown then
+            return
+        end
+
+        if StepAnim and Animator and CurrentTrack then
+            pcall(function()
+                Animator:StepAnimations(Delta)
+            end)
+        end
+
+        Accumulated = Accumulated + Delta
+
+        if Accumulated < FrameInterval then
+            return
+        end
+
+        local Elapsed = Accumulated
+
+        Accumulated = 0
+
+        -- вращение считаем по реальному времени кадра, скорость не зависит от FPS
+        if AutoRotate and not Dragging and Clone then
+            Yaw = Yaw + Elapsed * RotateSpeed
+            Dirty = true
+        end
+
+        if Dirty then
+            ApplyCamera()
+        end
+
     end)
 
     --------------------------------------------------------
@@ -423,6 +517,9 @@ function Viewer3D.Create(Parent, Settings)
             if Item:IsA("BaseScript") or Item:IsA("Sound") or Item:IsA("ForceField")
                 or Item:IsA("BillboardGui") or Item:IsA("SurfaceGui") then
                 Item:Destroy()
+            elseif (Options.Simple or Settings.Simple)
+                and (Item:IsA("Accessory") or Item:IsA("Clothing") or Item:IsA("ShirtGraphic")) then
+                Item:Destroy()
             elseif Item:IsA("BasePart") then
                 Item.Anchored = true
             end
@@ -461,7 +558,7 @@ function Viewer3D.Create(Parent, Settings)
         MinDistance = Radius * 0.4
         MaxDistance = Distance * 6
 
-        UpdateCamera()
+        ApplyCamera()
 
         Empty.Visible = false
 
@@ -548,6 +645,10 @@ function Viewer3D.Create(Parent, Settings)
         return Clone
     end
 
+    function Object:SetStepAnimations(State)
+        StepAnim = State == true
+    end
+
     function Object:SetAutoRotate(State)
         AutoRotate = State == true
     end
@@ -559,7 +660,7 @@ function Viewer3D.Create(Parent, Settings)
     function Object:SetView(NewYaw, NewPitch)
         Yaw = math.rad(NewYaw or 0)
         Pitch = math.rad(NewPitch or 0)
-        UpdateCamera()
+        ApplyCamera()
     end
 
     function Object:SetText(NewText)
